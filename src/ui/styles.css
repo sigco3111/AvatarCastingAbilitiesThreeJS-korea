@@ -298,6 +298,8 @@ body {
   -webkit-backdrop-filter: blur(14px);
   box-shadow: var(--ui-shadow);
   line-height: 1.65;
+  /* [v1.1.2] .hud 가 pointer-events: none 이므로 패널은 항상 클릭 가능해야 */
+  pointer-events: auto;
 }
 
 .hud__help {
@@ -336,6 +338,10 @@ body {
   min-width: 132px;
   font-variant-numeric: tabular-nums;
   color: var(--ui-text-dim);
+  /* [v1.1.2] lil-gui 자동 위치 (right:16 / top:16)와 시각적 충돌 완화
+   * - 아래쪽으로 옮겨서 VFX 에디터 헤더와 겹침 방지
+   * - 좀 더 작은 패널 / 더 투명한 배경 */
+  z-index: 5;
 }
 
 .hud__stats b {
@@ -422,13 +428,14 @@ body {
 
 /* 한/영 토글 단추 — HUD 타이틀 패널 안 우측에 절대 배치
  * - lil-gui 패널과 절대 안 겹침 (타이틀 패널은 좌상단, gui는 우상단 별도 영역)
- * - z-index 1002 → lil-gui (기본 1001) 보다 항상 위
+ * - z-index 1010 → 캔버스 / lil-gui / 로더 모두보다 항상 위
+ * - .hud 가 pointer-events: none 이므로 명시적으로 auto 보장
  * - 작은 pill 형태로 패널 시각 일관성 유지 */
 .hud__lang-toggle {
   position: absolute;
   top: 12px;
   right: 12px;
-  z-index: 1002;
+  z-index: 1010;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -436,6 +443,7 @@ body {
   border-radius: 999px;
   background: rgba(8, 12, 22, 0.85);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.22);
   font-family: inherit;
@@ -443,6 +451,10 @@ body {
   font-weight: 600;
   letter-spacing: 0.02em;
   cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
   transition: background 120ms ease, transform 120ms ease, border-color 120ms ease;
 }
 .hud__lang-toggle:hover {
