@@ -88,6 +88,12 @@ export class HUD {
       <div class="hud__panel hud__title">
         <span data-app-title></span>
         <span data-blurb></span>
+        <!-- 한/영 토글 단추 — 타이틀 패널 안 우측에 절대 배치 (lil-gui와 절대 겹치지 않음) -->
+        <button class="hud__lang-toggle" data-lang-toggle type="button" aria-label="한/영 토글">
+          <span class="hud__lang-toggle__cur" data-lang-cur></span>
+          <span class="hud__lang-toggle__sep">·</span>
+          <span class="hud__lang-toggle__alt" data-lang-alt></span>
+        </button>
       </div>
 
       <div class="hud__panel hud__help" data-help-panel>
@@ -109,12 +115,6 @@ export class HUD {
 
       <div class="hud__modes" data-modes></div>
       <div class="hud__elements" data-elements></div>
-
-      <button class="hud__lang-toggle" data-lang-toggle type="button" aria-label="한/영 토글">
-        <span class="hud__lang-toggle__cur" data-lang-cur></span>
-        <span class="hud__lang-toggle__sep">·</span>
-        <span class="hud__lang-toggle__alt" data-lang-alt></span>
-      </button>
 
       <div class="hud__toast" data-toast></div>
     `;
