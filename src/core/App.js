@@ -185,6 +185,9 @@ export class App {
       case 'toggleMode':
         this.setMode(MODES[(MODES.indexOf(settings.mode) + 1) % MODES.length]);
         break;
+      case 'toggleStats':
+        this.hud.toggleStats();
+        break;
       default:
         break;
     }

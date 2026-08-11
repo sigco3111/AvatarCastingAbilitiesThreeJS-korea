@@ -134,6 +134,7 @@ export class HUD {
     this.langToggle = this.root.querySelector('[data-lang-toggle]');
     this.langCur = this.root.querySelector('[data-lang-cur]');
     this.langAlt = this.root.querySelector('[data-lang-alt]');
+    this.statsPanel = this.root.querySelector('.hud__stats');
 
     this.langToggle.addEventListener('click', (event) => {
       event.stopPropagation();
@@ -246,6 +247,13 @@ export class HUD {
 
   toggleHelp() {
     if (this.help) this.help.classList.toggle('hud__help--hidden');
+  }
+
+  /** 스탯 패널 표시/숨김 (S 키) — 기본 숨김 */
+  toggleStats() {
+    if (!this.statsPanel) return false;
+    const visible = this.statsPanel.classList.toggle('hud__stats--visible');
+    return visible;
   }
 
   /** 옛 호출 호환. raw stats + 콜백 둘 다 받음. */
