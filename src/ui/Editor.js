@@ -1,15 +1,20 @@
 import GUI from 'lil-gui';
-import { settings, ELEMENTS, ELEMENT_META, MODES } from '../config/settings.js';
+import { settings, ELEMENTS, MODES } from '../config/settings.js';
 import { PresetManager } from './PresetManager.js';
+import { t, locale, onChange as subscribeLocaleChange } from './i18n.js';
 
 /**
- * Real-time VFX editor.
+ * 실시간 VFX 에디터.
  *
- * Every control binds straight to a field in `config/settings.js`. Because all
- * shaders, particle systems, lights and post passes *read* those fields each
- * frame, no controller needs an onChange handler: moving a slider updates
- * in-flight abilities, future casts, the environment and the post stack
- * simultaneously, with no rebuild and no shader recompilation.
+ * 모든 컨트롤은 `config/settings.js`의 필드에 직접 바인딩된다. 모든 셰이더,
+ * 입자 시스템, 광원, 포스트 패스가 매 프레임 그 필드를 *읽기* 때문에 어떤
+ * 컨트롤도 onChange 핸들러가 필요 없다: 슬라이더를 움직이면 진행 중인 시전,
+ * 미래의 캐스트, 환경, 포스트 스택이 동시에 — 재빌드도 셰이더 재컴파일도 없이
+ * 업데이트된다.
+ *
+ * i18n 연동:
+ *   각 컨트롤은 라벨을 `t(key)`로 표시하고, `__i18nKey` 메타데이터로 키를 보관.
+ *   언어가 바뀌면 모든 컨트롤러를 순회하며 표시 라벨을 다시 그린다.
  */
 export class Editor {
   /**
@@ -19,10 +24,10 @@ export class Editor {
     this.hooks = hooks;
     this.presets = new PresetManager();
 
-    this.gui = new GUI({ title: 'VFX Editor', width: 320 });
+    this.gui = new GUI({ title: t('editor.title'), width: 320 });
     this.gui.domElement.style.setProperty('--title-height', '30px');
 
-    this._presetState = { name: 'My preset', selected: this.presets.names[0] ?? '' };
+    this._presetState = { name: t('preset.defaultName'), selected: this.presets.names[0] ?? '' };
 
     this._buildPresets();
     this._buildGlobal();
@@ -34,17 +39,49 @@ export class Editor {
     this._buildCharacter();
     this._buildWalk();
 
-    // Element folders start closed — the global block is the common entry point.
+    // 원소 폴더는 기본으로 닫혀 있고 — 전역 폴더만 첫 진입점으로 열린다.
     this.gui.folders.forEach((folder) => folder.close());
     this.globalFolder.open();
+
+    this._unsubscribeLocale = subscribeLocaleChange(() => this._refreshLabels());
   }
 
   /* ------------------------------------------------------------------ */
   /* helpers                                                             */
   /* ------------------------------------------------------------------ */
 
-  static range(folder, object, key, min, max, step, label) {
-    return folder.add(object, key, min, max, step).name(label ?? key);
+  /**
+   * 가벼운 range 헬퍼. lil-gui 컨트롤러에 `__i18nKey` 메타데이터를 박아두고,
+   * 표시 라벨을 키 기반 번역으로 설정. 폴더 자체에는 가시 라벨을 직접 부여.
+   */
+  static range(folder, object, key, min, max, step, i18nKey) {
+    const controller = folder.add(object, key, min, max, step).name(t(i18nKey ?? key));
+    controller.__i18nKey = i18nKey ?? key;
+    return controller;
+  }
+
+  /**
+   * 폴더를 만들면서 동시에 표시 라벨을 i18n 키에서 가져온다. 반환된 폴더에
+   * __i18nKey 를 박아두고 _refreshLabels에서 재사용한다.
+   */
+  static folder(parent, i18nKey) {
+    const f = parent.addFolder(t(i18nKey));
+    f.__i18nKey = i18nKey;
+    return f;
+  }
+
+  /** 라벨이 단순 식별자거나 값이 enum인 (boolean/dropdown) 컨트롤용. */
+  static label(parent, object, key, i18nKey) {
+    const controller = parent.add(object, key).name(t(i18nKey ?? key));
+    controller.__i18nKey = i18nKey ?? key;
+    return controller;
+  }
+
+  /** 색상 슬라이더용 헬퍼. */
+  static color(parent, object, key, i18nKey) {
+    const controller = parent.addColor(object, key).name(t(i18nKey ?? key));
+    controller.__i18nKey = i18nKey ?? key;
+    return controller;
   }
 
   refresh() {
@@ -56,627 +93,642 @@ export class Editor {
     this.gui.show(!this._hidden);
   }
 
+  /** 모든 컨트롤러/폴더 라벨을 현재 로케일로 다시 그린다. */
+  _refreshLabels() {
+    this.gui.title(t('editor.title'));
+
+    const visit = (folder) => {
+      // 동적 title 콜백이 있으면 먼저 (element별 glyph + label)
+      folder.__refreshTitle?.();
+      // 일반 title도 다시
+      if (folder.__i18nKey) folder.title(t(folder.__i18nKey));
+      for (const controller of folder.controllers ?? []) {
+        if (controller.__i18nKey) controller.name(t(controller.__i18nKey));
+      }
+      for (const child of folder.folders ?? []) visit(child);
+    };
+    for (const folder of this.gui.folders) visit(folder);
+
+    this._presetState.name = t('preset.defaultName');
+  }
+
   /* ------------------------------------------------------------------ */
-  /* folders                                                             */
+  /* presets                                                             */
   /* ------------------------------------------------------------------ */
 
   _buildPresets() {
-    const folder = this.gui.addFolder('프리셋');
+    const folder = Editor.folder(this.gui, 'preset.folder');
     const state = this._presetState;
 
-    let selector = folder
-      .add(state, 'selected', this.presets.names.length ? this.presets.names : [''])
-      .name('프리셋');
+    let selector = Editor.label(folder, state, 'selected', 'preset.selector');
+    selector = selector.options(this.presets.names.length ? this.presets.names : ['']);
 
-    // lil-gui rebuilds the controller when the option list changes, so the
-    // reference has to be replaced rather than mutated.
     const refreshOptions = () => {
       const names = this.presets.names;
-      selector = selector.options(names.length ? names : ['']).name('프리셋');
+      selector = selector.options(names.length ? names : ['']);
+      selector.name(t('preset.selector'));
+      selector.__i18nKey = 'preset.selector';
       selector.setValue(names.includes(state.selected) ? state.selected : (names[0] ?? ''));
     };
 
-    folder.add(state, 'name').name('이름');
+    const nameController = Editor.label(folder, state, 'name', 'preset.name');
 
-    folder
-      .add(
-        {
-          save: () => {
-            this.presets.save(state.name);
-            state.selected = state.name;
-            refreshOptions();
-            this.hooks.onToast?.(`Saved preset "${state.name}"`);
-          }
-        },
-        'save'
-      )
-      .name('프리셋 저장');
+    Editor.label(folder, {
+      save: () => {
+        this.presets.save(state.name);
+        state.selected = state.name;
+        refreshOptions();
+        this.hooks.onToast?.(t('toast.saved', { name: state.name }));
+      }
+    }, 'save', 'preset.save');
 
-    folder
-      .add(
-        {
-          load: () => {
-            if (this.presets.load(state.selected)) {
-              this.refresh();
-              this.hooks.onToast?.(`Loaded "${state.selected}"`);
-            }
-          }
-        },
-        'load'
-      )
-      .name('프리셋 불러오기');
+    Editor.label(folder, {
+      load: () => {
+        if (this.presets.load(state.selected)) {
+          this.refresh();
+          this.hooks.onToast?.(t('toast.loaded', { name: state.selected }));
+        }
+      }
+    }, 'load', 'preset.load');
 
-    folder
-      .add(
-        {
-          duplicate: () => {
-            const copy = this.presets.duplicate(state.selected);
-            if (copy) {
-              state.selected = copy;
-              refreshOptions();
-              this.hooks.onToast?.(`Duplicated to "${copy}"`);
-            }
-          }
-        },
-        'duplicate'
-      )
-      .name('복제');
+    Editor.label(folder, {
+      duplicate: () => {
+        const copy = this.presets.duplicate(state.selected);
+        if (copy) {
+          state.selected = copy;
+          refreshOptions();
+          this.hooks.onToast?.(t('toast.duplicated', { name: copy }));
+        }
+      }
+    }, 'duplicate', 'preset.duplicate');
 
-    folder
-      .add(
-        {
-          remove: () => {
-            if (this.presets.remove(state.selected)) {
-              refreshOptions();
-              this.hooks.onToast?.('Preset deleted');
-            }
-          }
-        },
-        'remove'
-      )
-      .name('삭제');
+    Editor.label(folder, {
+      remove: () => {
+        if (this.presets.remove(state.selected)) {
+          refreshOptions();
+          this.hooks.onToast?.(t('toast.deleted', { name: state.selected }));
+        }
+      }
+    }, 'remove', 'preset.delete');
 
-    folder.add({ exportOne: () => this.presets.exportJSON() }, 'exportOne').name('현재 프리셋 내보내기 (JSON)');
-    folder.add({ exportAll: () => this.presets.exportAll() }, 'exportAll').name('모든 프리셋 내보내기');
+    Editor.label(folder, { exportOne: () => this.presets.exportJSON() }, 'exportOne', 'preset.exportCurrent');
+    Editor.label(folder, { exportAll: () => this.presets.exportAll() }, 'exportAll', 'preset.exportAll');
 
-    folder
-      .add(
-        {
-          import: async () => {
-            const result = await this.presets.importFromFile();
-            refreshOptions();
-            this.refresh();
-            this.hooks.onToast?.(
-              result.applied
-                ? 'Settings imported'
-                : result.imported.length
-                  ? `Imported ${result.imported.length} preset(s)`
-                  : 'Nothing imported'
-            );
-          }
-        },
-        'import'
-      )
-      .name('JSON 가져오기…');
+    Editor.label(folder, {
+      import: async () => {
+        const result = await this.presets.importFromFile();
+        refreshOptions();
+        this.refresh();
+        const applied = result.applied;
+        const imported = result.imported?.length ?? 0;
+        this.hooks.onToast?.(
+          applied
+            ? t('toast.imported')
+            : imported
+              ? t('toast.imported') + ` (${imported})`
+              : t('toast.imported') + ' — 0'
+        );
+      }
+    }, 'import', 'preset.import');
 
-    folder
-      .add(
-        {
-          reset: () => {
-            this.presets.reset();
-            this.refresh();
-            this.hooks.onToast?.('Reset to defaults');
-          }
-        },
-        'reset'
-      )
-      .name('기본값으로 초기화');
+    Editor.label(folder, {
+      reset: () => {
+        this.presets.reset();
+        this.refresh();
+        this.hooks.onToast?.(t('toast.reset'));
+      }
+    }, 'reset', 'preset.reset');
 
+    // keep references so editor hints can re-render labels
+    this._presetNameController = nameController;
     this.presetFolder = folder;
   }
 
   _buildGlobal() {
-    const folder = this.gui.addFolder('전역');
+    const folder = Editor.folder(this.gui, 'folder.global');
     const g = settings.global;
     const R = Editor.range;
 
-    R(folder, g, 'timeScale', 0.05, 2, 0.01, 'time scale');
-    R(folder, g, 'speed', 0.1, 4, 0.01, 'ability speed');
-    R(folder, g, 'lifetime', 0.1, 4, 0.01, 'lifetime');
-    R(folder, g, 'glow', 0, 5, 0.01, 'glow intensity');
-    R(folder, g, 'shaderIntensity', 0, 2, 0.01, 'shader intensity');
-    R(folder, g, 'opacity', 0, 2, 0.01, 'opacity');
-    R(folder, g, 'noiseStrength', 0, 3, 0.01, 'noise strength');
-    R(folder, g, 'noiseFrequency', 0.1, 4, 0.01, 'noise frequency');
-    R(folder, g, 'noiseSpeed', 0, 4, 0.01, 'noise speed');
-    R(folder, g, 'turbulence', 0, 4, 0.01, 'turbulence');
-    R(folder, g, 'randomness', 0, 2, 0.01, 'randomness');
-    R(folder, g, 'distortion', 0, 3, 0.01, 'distortion strength');
-    R(folder, g, 'fresnel', 0, 3, 0.01, 'fresnel strength');
+    R(folder, g, 'timeScale', 0.05, 2, 0.01, 'g.timeScale');
+    R(folder, g, 'speed', 0.1, 4, 0.01, 'g.speed');
+    R(folder, g, 'lifetime', 0.1, 4, 0.01, 'g.lifetime');
+    R(folder, g, 'glow', 0, 5, 0.01, 'g.glow');
+    R(folder, g, 'shaderIntensity', 0, 2, 0.01, 'g.shaderIntensity');
+    R(folder, g, 'opacity', 0, 2, 0.01, 'g.opacity');
+    R(folder, g, 'noiseStrength', 0, 3, 0.01, 'g.noiseStrength');
+    R(folder, g, 'noiseFrequency', 0.1, 4, 0.01, 'g.noiseFrequency');
+    R(folder, g, 'noiseSpeed', 0, 4, 0.01, 'g.noiseSpeed');
+    R(folder, g, 'turbulence', 0, 4, 0.01, 'g.turbulence');
+    R(folder, g, 'randomness', 0, 2, 0.01, 'g.randomness');
+    R(folder, g, 'distortion', 0, 3, 0.01, 'g.distortion');
+    R(folder, g, 'fresnel', 0, 3, 0.01, 'g.fresnel');
 
-    const particles = folder.addFolder('파티클');
-    R(particles, g, 'particleCount', 0, 3, 0.01, 'count');
-    R(particles, g, 'particleLifetime', 0.1, 3, 0.01, 'lifetime');
-    R(particles, g, 'particleSpeed', 0.1, 3, 0.01, 'speed');
-    R(particles, g, 'particleSize', 0.1, 3, 0.01, 'size');
-    R(particles, g, 'emissionRate', 0, 3, 0.01, 'emission rate');
+    const particles = Editor.folder(folder, 'folder.particles');
+    R(particles, g, 'particleCount', 0, 3, 0.01, 'g.particleCount');
+    R(particles, g, 'particleLifetime', 0.1, 3, 0.01, 'g.particleLifetime');
+    R(particles, g, 'particleSpeed', 0.1, 3, 0.01, 'g.particleSpeed');
+    R(particles, g, 'particleSize', 0.1, 3, 0.01, 'g.particleSize');
+    R(particles, g, 'emissionRate', 0, 3, 0.01, 'g.emissionRate');
 
-    const lighting = folder.addFolder('조명 & 충격');
-    R(lighting, g, 'lightIntensity', 0, 4, 0.01, 'light intensity');
-    R(lighting, g, 'lightRadius', 0.1, 4, 0.01, 'light radius');
-    R(lighting, g, 'explosionIntensity', 0, 3, 0.01, 'explosion intensity');
-    R(lighting, g, 'cameraShake', 0, 3, 0.01, 'camera shake');
-    R(lighting, g, 'animationSpeed', 0, 3, 0.01, 'animation speed');
+    const lighting = Editor.folder(folder, 'folder.lighting');
+    R(lighting, g, 'lightIntensity', 0, 4, 0.01, 'g.lightIntensity');
+    R(lighting, g, 'lightRadius', 0.1, 4, 0.01, 'g.lightRadius');
+    R(lighting, g, 'explosionIntensity', 0, 3, 0.01, 'g.explosionIntensity');
+    R(lighting, g, 'cameraShake', 0, 3, 0.01, 'g.cameraShake');
+    R(lighting, g, 'animationSpeed', 0, 3, 0.01, 'g.animationSpeed');
 
     this.globalFolder = folder;
   }
 
   _buildTrail() {
-    const folder = this.gui.addFolder('캐스트 트레일');
-    const t = settings.trail;
+    const folder = Editor.folder(this.gui, 'folder.castTrail');
+    const tr = settings.trail;
     const R = Editor.range;
 
-    R(folder, t, 'width', 0.05, 3, 0.01, 'trail width');
-    R(folder, t, 'length', 0.05, 1, 0.01, 'trail length');
-    R(folder, t, 'opacity', 0, 2, 0.01, 'trail opacity');
-    R(folder, t, 'glow', 0, 10, 0.01, 'trail glow');
-    folder.addColor(t, 'colorInner').name('안쪽 색');
-    folder.addColor(t, 'colorOuter').name('바깥 색');
-    R(folder, t, 'flowSpeed', 0, 6, 0.01, 'flow speed');
-    R(folder, t, 'noiseStrength', 0, 2, 0.01, 'noise strength');
-    R(folder, t, 'noiseFrequency', 0.1, 8, 0.01, 'noise frequency');
-    R(folder, t, 'dissolveSpeed', 0.1, 6, 0.01, 'dissolve speed');
-    R(folder, t, 'taper', 0, 1, 0.01, 'taper');
-    R(folder, t, 'softness', 0.02, 1, 0.01, 'softness');
-    R(folder, t, 'sparkle', 0, 3, 0.01, 'sparkle');
-    R(folder, t, 'height', 0.01, 1, 0.01, 'hover height');
+    R(folder, tr, 'width', 0.05, 3, 0.01, 'trail.width');
+    R(folder, tr, 'length', 0.05, 1, 0.01, 'trail.length');
+    R(folder, tr, 'opacity', 0, 2, 0.01, 'trail.opacity');
+    R(folder, tr, 'glow', 0, 10, 0.01, 'trail.glow');
+    Editor.color(folder, tr, 'colorInner', 'trail.innerColour');
+    Editor.color(folder, tr, 'colorOuter', 'trail.outerColour');
+    R(folder, tr, 'flowSpeed', 0, 6, 0.01, 'trail.flowSpeed');
+    R(folder, tr, 'noiseStrength', 0, 2, 0.01, 'trail.noiseStrength');
+    R(folder, tr, 'noiseFrequency', 0.1, 8, 0.01, 'trail.noiseFrequency');
+    R(folder, tr, 'dissolveSpeed', 0.1, 6, 0.01, 'trail.dissolveSpeed');
+    R(folder, tr, 'taper', 0, 1, 0.01, 'trail.taper');
+    R(folder, tr, 'softness', 0.02, 1, 0.01, 'trail.softness');
+    R(folder, tr, 'sparkle', 0, 3, 0.01, 'trail.sparkle');
+    R(folder, tr, 'height', 0.01, 1, 0.01, 'trail.height');
 
-    const input = folder.addFolder('그리기');
-    R(input, settings.input, 'minPointDistance', 0.02, 1, 0.01, 'jitter filter');
-    R(input, settings.input, 'minPathLength', 0.2, 8, 0.1, 'min path length');
-    R(input, settings.input, 'smoothing', 0, 0.95, 0.01, 'smoothing');
-    R(input, settings.input, 'curveTension', 0, 1, 0.01, 'curve tension');
-    R(input, settings.input, 'samplesPerUnit', 0.5, 8, 0.1, 'samples / unit');
+    const input = Editor.folder(folder, 'folder.drawing');
+    const inp = settings.input;
+    R(input, inp, 'minPointDistance', 0.02, 1, 0.01, 'input.minPointDistance');
+    R(input, inp, 'minPathLength', 0.2, 8, 0.1, 'input.minPathLength');
+    R(input, inp, 'smoothing', 0, 0.95, 0.01, 'input.smoothing');
+    R(input, inp, 'curveTension', 0, 1, 0.01, 'input.curveTension');
+    R(input, inp, 'samplesPerUnit', 0.5, 8, 0.1, 'input.samplesPerUnit');
   }
 
   _buildElement(element) {
-    const meta = ELEMENT_META[element];
-    const folder = this.gui.addFolder(`${meta.glyph}  ${meta.label}`);
+    const folder = Editor.folder(this.gui, `element.${element}.folder`);
+    folder.__i18nKey = `element.${element}.folder`;
+    // folder 이름은 glyph + label 로 동적 표시 (덮어쓰기용 헬퍼 함수)
+    folder.__i18nTitle = `${element}`;
+    folder.title(`${glyphFor(element)}  ${t(`element.${element}.label`)}`);
+
     const c = settings[element];
     const R = Editor.range;
 
-    R(folder, c, 'speed', 0.5, 40, 0.1, 'speed');
-    R(folder, c, 'lifetime', 0.2, 10, 0.1, 'lifetime');
+    R(folder, c, 'speed', 0.5, 40, 0.1, `${element}.speed`);
+    R(folder, c, 'lifetime', 0.2, 10, 0.1, `${element}.lifetime`);
 
     const build = {
       fire: () => {
-        const flight = folder.addFolder('비행');
-        R(flight, c, 'flightHeight', 0, 8, 0.01, 'cruise height');
-        R(flight, c, 'flightArc', 0, 5, 0.01, 'arc');
+        const flight = Editor.folder(folder, 'folder.flight');
+        R(flight, c, 'flightHeight', 0, 8, 0.01, 'fire.flightHeight');
+        R(flight, c, 'flightArc', 0, 5, 0.01, 'fire.flightArc');
 
-        const shape = folder.addFolder('불꽃 모양');
-        R(shape, c, 'flameWidth', 0.05, 3, 0.01, 'tube radius');
-        R(shape, c, 'headSize', 1, 5, 0.01, 'fireball size');
-        R(shape, c, 'flameHeight', 1, 6, 0.01, 'updraft stretch');
-        R(shape, c, 'streamLength', 0.5, 20, 0.1, 'stream length');
-        R(shape, c, 'wakeSpread', 0, 3, 0.01, 'wake spread');
-        R(shape, c, 'wakeRise', 0, 3, 0.01, 'wake rise');
-        R(shape, c, 'bulge', 0, 0.8, 0.01, 'silhouette lobes');
-        R(shape, c, 'bulgeScale', 0.1, 2, 0.01, 'lobe frequency');
-        R(shape, c, 'detachment', 0, 1.5, 0.01, 'tail break-up');
-        R(shape, c, 'softness', 0.05, 1, 0.01, 'softness');
+        const shape = Editor.folder(folder, 'folder.flame');
+        R(shape, c, 'flameWidth', 0.05, 3, 0.01, 'fire.flameWidth');
+        R(shape, c, 'headSize', 1, 5, 0.01, 'fire.headSize');
+        R(shape, c, 'flameHeight', 1, 6, 0.01, 'fire.flameHeight');
+        R(shape, c, 'streamLength', 0.5, 20, 0.1, 'fire.streamLength');
+        R(shape, c, 'wakeSpread', 0, 3, 0.01, 'fire.wakeSpread');
+        R(shape, c, 'wakeRise', 0, 3, 0.01, 'fire.wakeRise');
+        R(shape, c, 'bulge', 0, 0.8, 0.01, 'fire.bulge');
+        R(shape, c, 'bulgeScale', 0.1, 2, 0.01, 'fire.bulgeScale');
+        R(shape, c, 'detachment', 0, 1.5, 0.01, 'fire.detachment');
+        R(shape, c, 'softness', 0.05, 1, 0.01, 'fire.softness');
 
-        const turb = folder.addFolder('난류');
-        R(turb, c, 'vortex', 0, 3, 0.01, 'vortex roll-up');
-        R(turb, c, 'ringFrequency', 0, 3, 0.01, 'vortices per metre');
-        R(turb, c, 'ringSpeed', 0, 6, 0.01, 'vortex speed');
-        R(turb, c, 'flameCurl', 0, 5, 0.01, 'swirl');
-        R(turb, c, 'flameTurbulence', 0, 6, 0.01, 'turbulence');
-        R(turb, c, 'flameWarp', 0, 2, 0.01, 'domain warp');
-        R(turb, c, 'tongueStretch', 0.15, 2, 0.01, 'tongue stretch');
-        R(turb, c, 'streamStretch', 0.15, 2, 0.01, 'streamwise stretch');
-        R(turb, c, 'lick', 0, 5, 0.01, 'fringe shear');
-        R(turb, c, 'wisps', 0, 2, 0.01, 'wisps');
-        R(turb, c, 'shred', 0, 3, 0.01, 'fringe shred');
-        R(turb, c, 'flameSpeed', 0, 8, 0.01, 'flow speed');
-        R(turb, c, 'buoyancy', 0, 6, 0.01, 'buoyancy');
-        R(turb, c, 'flicker', 0, 2, 0.01, 'flicker');
-        R(turb, c, 'noiseStrength', 0, 3, 0.01, 'noise strength');
-        R(turb, c, 'noiseFrequency', 0.1, 6, 0.01, 'noise frequency');
-        R(turb, c, 'detailOctaves', 2, 5, 1, 'detail octaves');
+        const turb = Editor.folder(folder, 'folder.turbulence');
+        R(turb, c, 'vortex', 0, 3, 0.01, 'fire.vortex');
+        R(turb, c, 'ringFrequency', 0, 3, 0.01, 'fire.ringFrequency');
+        R(turb, c, 'ringSpeed', 0, 6, 0.01, 'fire.ringSpeed');
+        R(turb, c, 'flameCurl', 0, 5, 0.01, 'fire.flameCurl');
+        R(turb, c, 'flameTurbulence', 0, 6, 0.01, 'fire.flameTurbulence');
+        R(turb, c, 'flameWarp', 0, 2, 0.01, 'fire.flameWarp');
+        R(turb, c, 'tongueStretch', 0.15, 2, 0.01, 'fire.tongueStretch');
+        R(turb, c, 'streamStretch', 0.15, 2, 0.01, 'fire.streamStretch');
+        R(turb, c, 'lick', 0, 5, 0.01, 'fire.lick');
+        R(turb, c, 'wisps', 0, 2, 0.01, 'fire.wisps');
+        R(turb, c, 'shred', 0, 3, 0.01, 'fire.shred');
+        R(turb, c, 'flameSpeed', 0, 8, 0.01, 'fire.flameSpeed');
+        R(turb, c, 'buoyancy', 0, 6, 0.01, 'fire.buoyancy');
+        R(turb, c, 'flicker', 0, 2, 0.01, 'fire.flicker');
+        R(turb, c, 'noiseStrength', 0, 3, 0.01, 'fire.noiseStrength');
+        R(turb, c, 'noiseFrequency', 0.1, 6, 0.01, 'fire.noiseFrequency');
+        R(turb, c, 'detailOctaves', 2, 5, 1, 'fire.detailOctaves');
 
-        const heat = folder.addFolder('온도 & 발광');
-        R(heat, c, 'tempCore', 1500, 6000, 10, 'core temp (K)');
-        R(heat, c, 'tempEdge', 800, 3000, 10, 'edge temp (K)');
-        R(heat, c, 'emissionCurve', 1, 8, 0.05, 'radiance curve');
-        R(heat, c, 'heatFocus', 0.4, 4, 0.01, 'heat focus');
-        R(heat, c, 'heatFalloff', 0.2, 4, 0.01, 'heat falloff');
-        R(heat, c, 'heatFollow', 0, 1, 0.01, 'heat follows noise');
-        R(heat, c, 'tailHeat', 0, 1.5, 0.01, 'wake temperature');
-        R(heat, c, 'scatter', 0, 4, 0.01, 'firelight scatter');
-        R(heat, c, 'scatterFalloff', 0.2, 8, 0.05, 'scatter falloff');
-        R(heat, c, 'glow', 0, 10, 0.01, 'glow');
+        const heat = Editor.folder(folder, 'folder.temperature');
+        R(heat, c, 'tempCore', 1500, 6000, 10, 'fire.tempCore');
+        R(heat, c, 'tempEdge', 800, 3000, 10, 'fire.tempEdge');
+        R(heat, c, 'emissionCurve', 1, 8, 0.05, 'fire.emissionCurve');
+        R(heat, c, 'heatFocus', 0.4, 4, 0.01, 'fire.heatFocus');
+        R(heat, c, 'heatFalloff', 0.2, 4, 0.01, 'fire.heatFalloff');
+        R(heat, c, 'heatFollow', 0, 1, 0.01, 'fire.heatFollow');
+        R(heat, c, 'tailHeat', 0, 1.5, 0.01, 'fire.tailHeat');
+        R(heat, c, 'scatter', 0, 4, 0.01, 'fire.scatter');
+        R(heat, c, 'scatterFalloff', 0.2, 8, 0.05, 'fire.scatterFalloff');
+        R(heat, c, 'glow', 0, 10, 0.01, 'fire.glow');
 
-        const render = folder.addFolder('볼륨 렌더링');
-        R(render, c, 'volumeDensity', 0, 4, 0.01, 'density');
-        R(render, c, 'soot', 0, 6, 0.01, 'soot absorption');
-        R(render, c, 'coreClarity', 0.02, 1, 0.01, 'core clarity');
-        R(render, c, 'opacity', 0, 2, 0.01, 'opacity');
-        R(render, c, 'volumeSteps', 6, 72, 1, 'raymarch steps');
+        const render = Editor.folder(folder, 'folder.volume');
+        R(render, c, 'volumeDensity', 0, 4, 0.01, 'fire.volumeDensity');
+        R(render, c, 'soot', 0, 6, 0.01, 'fire.soot');
+        R(render, c, 'coreClarity', 0.02, 1, 0.01, 'fire.coreClarity');
+        R(render, c, 'opacity', 0, 2, 0.01, 'fire.renderOpacity');
+        R(render, c, 'volumeSteps', 6, 72, 1, 'fire.volumeSteps');
 
-        const colors = folder.addFolder('불 그라데이션');
-        R(colors, c, 'paletteBlend', 0, 1, 0.01, 'palette vs physics');
-        colors.addColor(c, 'colorCore').name('코어');
-        colors.addColor(c, 'colorMid').name('중간');
-        colors.addColor(c, 'colorEdge').name('가장자리');
-        colors.addColor(c, 'colorSmoke').name('연기');
+        const colors = Editor.folder(folder, 'folder.fireGradient');
+        R(colors, c, 'paletteBlend', 0, 1, 0.01, 'fire.paletteBlend');
+        Editor.color(colors, c, 'colorCore', 'fire.core');
+        Editor.color(colors, c, 'colorMid', 'fire.mid');
+        Editor.color(colors, c, 'colorEdge', 'fire.edge');
+        Editor.color(colors, c, 'colorSmoke', 'fire.smoke');
 
-        const embers = folder.addFolder('불씨 & 연기');
-        R(embers, c, 'emberRate', 0, 400, 1, 'ember rate');
-        R(embers, c, 'emberCount', 0, 3, 0.01, 'ember count');
-        R(embers, c, 'emberSize', 0.01, 0.6, 0.005, 'ember size');
-        R(embers, c, 'emberSpeed', 0, 10, 0.05, 'ember speed');
-        R(embers, c, 'emberLifetime', 0.1, 5, 0.05, 'ember lifetime');
-        R(embers, c, 'sparkRate', 0, 200, 1, 'spark rate');
-        R(embers, c, 'sparkSpeed', 0, 20, 0.1, 'spark speed');
-        R(embers, c, 'smokeDensity', 0, 2, 0.01, 'smoke density');
-        R(embers, c, 'smokeSpeed', 0, 5, 0.01, 'smoke speed');
-        R(embers, c, 'smokeSize', 0.1, 5, 0.01, 'smoke size');
-        R(embers, c, 'smokeLifetime', 0.2, 8, 0.05, 'smoke lifetime');
+        const embers = Editor.folder(folder, 'folder.embers');
+        R(embers, c, 'emberRate', 0, 400, 1, 'fire.embersRate');
+        R(embers, c, 'emberCount', 0, 3, 0.01, 'fire.emberCount');
+        R(embers, c, 'emberSize', 0.01, 0.6, 0.005, 'fire.emberSize');
+        R(embers, c, 'emberSpeed', 0, 10, 0.05, 'fire.emberSpeed');
+        R(embers, c, 'emberLifetime', 0.1, 5, 0.05, 'fire.emberLife');
+        R(embers, c, 'sparkRate', 0, 200, 1, 'fire.sparkRate');
+        R(embers, c, 'sparkSpeed', 0, 20, 0.1, 'fire.sparkSpeed');
+        R(embers, c, 'smokeDensity', 0, 2, 0.01, 'fire.smokeDensity');
+        R(embers, c, 'smokeSpeed', 0, 5, 0.01, 'fire.smokeSpeed');
+        R(embers, c, 'smokeSize', 0.1, 5, 0.01, 'fire.smokeSize');
+        R(embers, c, 'smokeLifetime', 0.2, 8, 0.05, 'fire.smokeLife');
 
-        const impact = folder.addFolder('열 & 폭발');
-        R(impact, c, 'heatDistortion', 0, 4, 0.01, 'heat distortion');
-        R(impact, c, 'distortionRadius', 0.2, 6, 0.05, 'distortion radius');
-        R(impact, c, 'explosionSize', 0.2, 10, 0.05, 'explosion size');
-        R(impact, c, 'explosionBrightness', 0, 8, 0.05, 'explosion brightness');
-        R(impact, c, 'explosionShake', 0, 3, 0.01, 'explosion shake');
-        R(impact, c, 'explosionFlash', 0, 2, 0.01, 'screen flash');
+        const impact = Editor.folder(folder, 'folder.heat');
+        R(impact, c, 'heatDistortion', 0, 4, 0.01, 'fire.heatIntensity');
+        R(impact, c, 'distortionRadius', 0.2, 6, 0.05, 'fire.distortionRadius');
+        R(impact, c, 'explosionSize', 0.2, 10, 0.05, 'fire.explosionSize');
+        R(impact, c, 'explosionBrightness', 0, 8, 0.05, 'fire.explosionBrightness');
+        R(impact, c, 'explosionShake', 0, 3, 0.01, 'fire.explosionShake');
+        R(impact, c, 'explosionFlash', 0, 2, 0.01, 'fire.explosionFlash');
       },
 
       water: () => {
-        const flight = folder.addFolder('비행');
-        R(flight, c, 'height', 0, 4, 0.01, 'cruise height');
-        R(flight, c, 'surge', 0, 2, 0.01, 'surge amplitude');
-        R(flight, c, 'surgeLength', 0, 6, 0.01, 'surges along body');
-        R(flight, c, 'surgeSpeed', 0, 10, 0.01, 'surge speed');
-        R(flight, c, 'wakeSag', 0, 3, 0.01, 'wake sag');
+        const flight = Editor.folder(folder, 'folder.flight');
+        R(flight, c, 'height', 0, 4, 0.01, 'water.height');
+        R(flight, c, 'surge', 0, 2, 0.01, 'water.surge');
+        R(flight, c, 'surgeLength', 0, 6, 0.01, 'water.surgeLength');
+        R(flight, c, 'surgeSpeed', 0, 10, 0.01, 'water.surgeSpeed');
+        R(flight, c, 'wakeSag', 0, 3, 0.01, 'water.wakeSag');
 
-        const volume = folder.addFolder('물 본체');
-        R(volume, c, 'radius', 0.05, 3, 0.01, 'tube radius');
-        R(volume, c, 'headSize', 1, 5, 0.01, 'crest size');
-        R(volume, c, 'crest', 1, 4, 0.01, 'crest stretch');
-        R(volume, c, 'streamLength', 0.5, 24, 0.1, 'body length');
-        R(volume, c, 'waveAmplitude', 0, 1.5, 0.01, 'wave amplitude');
-        R(volume, c, 'waveFrequency', 0.1, 8, 0.01, 'wave frequency');
-        R(volume, c, 'chop', 0, 3, 0.01, 'chop');
-        R(volume, c, 'flowSpeed', 0, 6, 0.01, 'flow speed');
-        R(volume, c, 'noiseFrequency', 0.1, 6, 0.01, 'noise frequency');
-        R(volume, c, 'swirl', 0, 4, 0.01, 'swirl');
-        R(volume, c, 'detail', 0, 2, 0.01, 'ripple detail');
-        R(volume, c, 'streamStretch', 0.2, 10, 0.05, 'streamwise stretch');
-        R(volume, c, 'crestSharpness', 0, 2, 0.01, 'crest creases');
-        R(volume, c, 'volumeSteps', 8, 64, 1, 'raymarch steps');
+        const volume = Editor.folder(folder, 'folder.waterBody');
+        R(volume, c, 'radius', 0.05, 3, 0.01, 'water.thickness');
+        R(volume, c, 'headSize', 1, 5, 0.01, 'water.headSize');
+        R(volume, c, 'crest', 1, 4, 0.01, 'water.crest');
+        R(volume, c, 'streamLength', 0.5, 24, 0.1, 'water.streamLength');
+        R(volume, c, 'waveAmplitude', 0, 1.5, 0.01, 'water.waveAmplitude');
+        R(volume, c, 'waveFrequency', 0.1, 8, 0.01, 'water.waveFrequency');
+        R(volume, c, 'chop', 0, 3, 0.01, 'water.chop');
+        R(volume, c, 'flowSpeed', 0, 6, 0.01, 'water.flowSpeed');
+        R(volume, c, 'noiseFrequency', 0.1, 6, 0.01, 'water.noiseFrequency');
+        R(volume, c, 'swirl', 0, 4, 0.01, 'water.swirl');
+        R(volume, c, 'detail', 0, 2, 0.01, 'water.detail');
+        R(volume, c, 'streamStretch', 0.2, 10, 0.05, 'water.streamStretch');
+        R(volume, c, 'crestSharpness', 0, 2, 0.01, 'water.crestSharpness');
+        R(volume, c, 'volumeSteps', 8, 64, 1, 'water.volumeSteps');
 
-        const surface = folder.addFolder('표면');
-        R(surface, c, 'transparency', 0, 1.5, 0.01, 'transparency');
-        R(surface, c, 'depthDensity', 0, 4, 0.01, 'depth density');
-        R(surface, c, 'refraction', 0, 4, 0.01, 'refraction strength');
-        R(surface, c, 'fresnel', 0, 5, 0.01, 'fresnel');
-        R(surface, c, 'envIntensity', 0, 4, 0.01, 'reflection');
-        R(surface, c, 'skyReflection', 0, 3, 0.01, 'sky reflection');
-        R(surface, c, 'specular', 0, 6, 0.01, 'sun glint');
-        R(surface, c, 'translucency', 0, 4, 0.01, 'translucency');
-        R(surface, c, 'foam', 0, 5, 0.01, 'foam amount');
-        R(surface, c, 'foamSharpness', 0.2, 6, 0.01, 'foam sharpness');
-        R(surface, c, 'shred', 0, 1.5, 0.01, 'edge break-up');
-        R(surface, c, 'shredDepth', 0.02, 2, 0.01, 'break-up depth');
-        R(surface, c, 'glow', 0, 6, 0.01, 'glow');
-        R(surface, c, 'opacity', 0, 2, 0.01, 'opacity');
-        surface.addColor(c, 'colorDeep').name('짙은 색');
-        surface.addColor(c, 'colorShallow').name('얕은 색');
-        surface.addColor(c, 'colorFoam').name('거품');
+        const surface = Editor.folder(folder, 'folder.surface');
+        R(surface, c, 'transparency', 0, 1.5, 0.01, 'water.transparency');
+        R(surface, c, 'depthDensity', 0, 4, 0.01, 'water.depthDensity');
+        R(surface, c, 'refraction', 0, 4, 0.01, 'water.refraction');
+        R(surface, c, 'fresnel', 0, 5, 0.01, 'water.fresnel');
+        R(surface, c, 'envIntensity', 0, 4, 0.01, 'water.envIntensity');
+        R(surface, c, 'skyReflection', 0, 3, 0.01, 'water.skyReflection');
+        R(surface, c, 'specular', 0, 6, 0.01, 'water.specular');
+        R(surface, c, 'translucency', 0, 4, 0.01, 'water.translucency');
+        R(surface, c, 'foam', 0, 5, 0.01, 'water.surfaceFoam');
+        R(surface, c, 'foamSharpness', 0.2, 6, 0.01, 'water.foamSharpness');
+        R(surface, c, 'shred', 0, 1.5, 0.01, 'water.edgeBreak');
+        R(surface, c, 'shredDepth', 0.02, 2, 0.01, 'water.shredDepth');
+        R(surface, c, 'glow', 0, 6, 0.01, 'water.glow');
+        R(surface, c, 'opacity', 0, 2, 0.01, 'water.opacity');
+        Editor.color(surface, c, 'colorDeep', 'water.deepColour');
+        Editor.color(surface, c, 'colorShallow', 'water.shallowColour');
+        Editor.color(surface, c, 'colorFoam', 'water.foamColour');
 
-        const spray = folder.addFolder('물보라, 거품 & 안개');
-        R(spray, c, 'dropletRate', 0, 800, 1, 'droplet count/s');
-        R(spray, c, 'dropletSize', 0.005, 0.5, 0.005, 'droplet size');
-        R(spray, c, 'dropletSpeed', 0, 10, 0.05, 'droplet speed');
-        R(spray, c, 'dropletLifetime', 0.1, 5, 0.05, 'droplet lifetime');
-        R(spray, c, 'sprayRate', 0, 600, 1, 'spray count/s');
-        R(spray, c, 'spraySpeed', 0, 20, 0.1, 'spray speed');
-        R(spray, c, 'foamRate', 0, 200, 1, 'foam count/s');
-        R(spray, c, 'foamSize', 0.05, 3, 0.01, 'foam size');
-        R(spray, c, 'foamLifetime', 0.1, 6, 0.05, 'foam lifetime');
-        R(spray, c, 'mistDensity', 0, 2, 0.01, 'mist density');
-        R(spray, c, 'mistSize', 0.1, 5, 0.01, 'mist size');
-        R(spray, c, 'mistLifetime', 0.2, 6, 0.05, 'mist lifetime');
-        R(spray, c, 'wakeRate', 0, 30, 0.5, 'wake ripples/s');
+        const spray = Editor.folder(folder, 'folder.spray');
+        R(spray, c, 'dropletRate', 0, 800, 1, 'water.dropletRate');
+        R(spray, c, 'dropletSize', 0.005, 0.5, 0.005, 'water.dropletSize');
+        R(spray, c, 'dropletSpeed', 0, 10, 0.05, 'water.dropletSpeed');
+        R(spray, c, 'dropletLifetime', 0.1, 5, 0.05, 'water.dropletLife');
+        R(spray, c, 'sprayRate', 0, 600, 1, 'water.sprayRate');
+        R(spray, c, 'spraySpeed', 0, 20, 0.1, 'water.spraySpeed');
+        R(spray, c, 'foamRate', 0, 200, 1, 'water.foamRate');
+        R(spray, c, 'foamSize', 0.05, 3, 0.01, 'water.foamSize');
+        R(spray, c, 'foamLifetime', 0.1, 6, 0.05, 'water.foamLife');
+        R(spray, c, 'mistDensity', 0, 2, 0.01, 'water.mistRate');
+        R(spray, c, 'mistSize', 0.1, 5, 0.01, 'water.mistSize');
+        R(spray, c, 'mistLifetime', 0.2, 6, 0.05, 'water.mistLife');
+        R(spray, c, 'wakeRate', 0, 30, 0.5, 'water.wakeRate');
 
-        const impact = folder.addFolder('Splash');
-        R(impact, c, 'splashSize', 0.2, 12, 0.05, 'splash size');
-        R(impact, c, 'splashIntensity', 0, 5, 0.01, 'splash intensity');
-        R(impact, c, 'crownJets', 0, 40, 1, 'crown jets');
-        R(impact, c, 'foamSpread', 0, 20, 0.1, 'foam spread');
-        R(impact, c, 'foamLingering', 0.5, 12, 0.1, 'foam lifetime');
-        R(impact, c, 'rippleSize', 0.5, 20, 0.1, 'ripple size');
-        R(impact, c, 'rippleSpeed', 0.1, 4, 0.01, 'ripple speed');
-        R(impact, c, 'explosionShake', 0, 3, 0.01, 'shake');
-        R(impact, c, 'explosionFlash', 0, 2, 0.01, 'screen flash');
+        const impact = Editor.folder(folder, 'folder.heat');
+        R(impact, c, 'splashSize', 0.2, 12, 0.05, 'water.splashHeight');
+        R(impact, c, 'splashIntensity', 0, 5, 0.01, 'water.splashIntensity');
+        R(impact, c, 'crownJets', 0, 40, 1, 'water.crownJets');
+        R(impact, c, 'foamSpread', 0, 20, 0.1, 'water.foamSpread');
+        R(impact, c, 'foamLingering', 0.5, 12, 0.1, 'water.foamLingering');
+        R(impact, c, 'rippleSize', 0.5, 20, 0.1, 'water.rippleSize');
+        R(impact, c, 'rippleSpeed', 0.1, 4, 0.01, 'water.rippleSpeed');
+        R(impact, c, 'explosionShake', 0, 3, 0.01, 'water.explosionShake');
+        R(impact, c, 'explosionFlash', 0, 2, 0.01, 'water.explosionFlash');
       },
 
       earth: () => {
-        const crust = folder.addFolder('Crust');
-        R(crust, c, 'crustWidth', 0.5, 10, 0.05, 'crust width');
-        R(crust, c, 'crustDensity', 0.2, 3, 0.01, 'plate density');
-        R(crust, c, 'plateSize', 0.2, 3, 0.01, 'plate size');
-        R(crust, c, 'plateThickness', 0.02, 1, 0.01, 'plate thickness');
-        R(crust, c, 'paintTime', 0.03, 1.5, 0.01, 'paint time');
+        const crust = Editor.folder(folder, 'earth.crust');
+        R(crust, c, 'crustWidth', 0.5, 10, 0.05, 'earth.crustWidth');
+        R(crust, c, 'crustDensity', 0.2, 3, 0.01, 'earth.crustDensity');
+        R(crust, c, 'plateSize', 0.2, 3, 0.01, 'earth.plateSize');
+        R(crust, c, 'plateThickness', 0.02, 1, 0.01, 'earth.plateThickness');
+        R(crust, c, 'paintTime', 0.03, 1.5, 0.01, 'earth.paintTime');
 
-        const fracture = folder.addFolder('Fracture');
-        R(fracture, c, 'crackDelay', 0.02, 3, 0.01, 'crack delay');
-        R(fracture, c, 'crackSharpness', 0.05, 1.5, 0.01, 'crack snap');
-        R(fracture, c, 'plateTilt', 0, 1.6, 0.01, 'plate tilt');
-        R(fracture, c, 'plateLift', 0, 1.5, 0.01, 'plate lift');
-        R(fracture, c, 'plateSpread', 0, 1.5, 0.01, 'plate spread');
+        const fracture = Editor.folder(folder, 'earth.fracture');
+        R(fracture, c, 'crackDelay', 0.02, 3, 0.01, 'earth.crackDelay');
+        R(fracture, c, 'crackSharpness', 0.05, 1.5, 0.01, 'earth.crackSharpness');
+        R(fracture, c, 'plateTilt', 0, 1.6, 0.01, 'earth.plateTilt');
+        R(fracture, c, 'plateLift', 0, 1.5, 0.01, 'earth.plateLift');
+        R(fracture, c, 'plateSpread', 0, 1.5, 0.01, 'earth.plateSpread');
 
-        const rocks = folder.addFolder('Rocks');
-        R(rocks, c, 'rockCount', 0.1, 3, 0.01, 'rock count');
-        R(rocks, c, 'rockSpacing', 0.2, 4, 0.01, 'rock spacing');
-        R(rocks, c, 'rockSize', 0.1, 3, 0.01, 'rock size');
-        R(rocks, c, 'rockRandomness', 0, 2, 0.01, 'boulder randomness');
-        R(rocks, c, 'riseHeight', 0.1, 4, 0.01, 'rise height');
-        R(rocks, c, 'riseSpeed', 0.5, 14, 0.05, 'rise speed');
-        R(rocks, c, 'sinkDelay', 0, 4, 0.01, 'sink delay');
-        R(rocks, c, 'tumble', 0, 4, 0.01, 'tumble');
-        rocks.addColor(c, 'colorRock').name('rock');
-        rocks.addColor(c, 'colorRockDark').name('rock dark');
-        rocks.addColor(c, 'colorMoss').name('moss');
+        const rocks = Editor.folder(folder, 'earth.rocks');
+        R(rocks, c, 'rockCount', 0.1, 3, 0.01, 'earth.rockCount');
+        R(rocks, c, 'rockSpacing', 0.2, 4, 0.01, 'earth.rockSpacing');
+        R(rocks, c, 'rockSize', 0.1, 3, 0.01, 'earth.rockSize');
+        R(rocks, c, 'rockRandomness', 0, 2, 0.01, 'earth.rockRandomness');
+        R(rocks, c, 'riseHeight', 0.1, 4, 0.01, 'earth.riseHeight');
+        R(rocks, c, 'riseSpeed', 0.5, 14, 0.05, 'earth.riseSpeed');
+        R(rocks, c, 'sinkDelay', 0, 4, 0.01, 'earth.sinkDelay');
+        R(rocks, c, 'tumble', 0, 4, 0.01, 'earth.tumble');
+        Editor.color(rocks, c, 'colorRock', 'earth.colorRock');
+        Editor.color(rocks, c, 'colorRockDark', 'earth.colorRockDark');
+        Editor.color(rocks, c, 'colorMoss', 'earth.colorMoss');
 
-        const ground = folder.addFolder('Ground damage');
-        R(ground, c, 'crackWidth', 0, 2, 0.01, 'crack width');
-        R(ground, c, 'crackDepth', 0, 3, 0.01, 'crack depth');
-        R(ground, c, 'groundDisplacement', 0, 2, 0.01, 'ground displacement');
-        R(ground, c, 'glow', 0, 4, 0.01, 'crack glow');
+        const ground = Editor.folder(folder, 'earth.ground');
+        R(ground, c, 'crackWidth', 0, 2, 0.01, 'earth.crackWidth');
+        R(ground, c, 'crackDepth', 0, 3, 0.01, 'earth.crackDepth');
+        R(ground, c, 'groundDisplacement', 0, 2, 0.01, 'earth.groundDisplacement');
+        R(ground, c, 'glow', 0, 4, 0.01, 'earth.glow');
 
-        const debris = folder.addFolder('Dust & debris');
-        R(debris, c, 'dustAmount', 0, 3, 0.01, 'dust amount');
-        R(debris, c, 'dustLifetime', 0.2, 6, 0.05, 'dust lifetime');
-        R(debris, c, 'dustSize', 0.1, 5, 0.01, 'dust size');
-        R(debris, c, 'debrisRate', 0, 300, 1, 'debris rate');
-        R(debris, c, 'debrisVelocity', 0, 20, 0.1, 'debris velocity');
-        R(debris, c, 'debrisSize', 0.01, 0.6, 0.005, 'debris size');
-        R(debris, c, 'debrisLifetime', 0.1, 5, 0.05, 'debris lifetime');
-        R(debris, c, 'pebbleRate', 0, 200, 1, 'pebble rate');
+        const debris = Editor.folder(folder, 'earth.debris');
+        R(debris, c, 'dustAmount', 0, 3, 0.01, 'earth.dustAmount');
+        R(debris, c, 'dustLifetime', 0.2, 6, 0.05, 'earth.dustLife');
+        R(debris, c, 'dustSize', 0.1, 5, 0.01, 'earth.dustSize');
+        R(debris, c, 'debrisRate', 0, 300, 1, 'earth.debrisRate');
+        R(debris, c, 'debrisVelocity', 0, 20, 0.1, 'earth.debrisVelocity');
+        R(debris, c, 'debrisSize', 0.01, 0.6, 0.005, 'earth.debrisSize');
+        R(debris, c, 'debrisLifetime', 0.1, 5, 0.05, 'earth.debrisLife');
+        R(debris, c, 'pebbleRate', 0, 200, 1, 'earth.pebbleRate');
 
-        const impact = folder.addFolder('Tower');
-        R(impact, c, 'towerHeight', 0.5, 20, 0.05, 'tower height');
-        R(impact, c, 'towerWidth', 0.1, 5, 0.01, 'tower width');
-        R(impact, c, 'towerRiseTime', 0.1, 4, 0.01, 'rise time');
-        R(impact, c, 'towerHold', 0, 8, 0.05, 'hold time');
-        R(impact, c, 'towerRocks', 0, 60, 1, 'base rocks');
-        R(impact, c, 'towerRockRadius', 0.2, 8, 0.05, 'base rock radius');
-        R(impact, c, 'shakeIntensity', 0, 4, 0.01, 'shake intensity');
-        R(impact, c, 'shakeDuration', 0.1, 4, 0.01, 'shake duration');
-        R(impact, c, 'explosionFlash', 0, 2, 0.01, 'screen flash');
+        const impact = Editor.folder(folder, 'folder.heat');
+        R(impact, c, 'towerHeight', 0.5, 20, 0.05, 'earth.towerHeight');
+        R(impact, c, 'towerWidth', 0.1, 5, 0.01, 'earth.towerWidth');
+        R(impact, c, 'towerRiseTime', 0.1, 4, 0.01, 'earth.towerRiseTime');
+        R(impact, c, 'towerHold', 0, 8, 0.05, 'earth.towerHold');
+        R(impact, c, 'towerRocks', 0, 60, 1, 'earth.towerRocks');
+        R(impact, c, 'towerRockRadius', 0.2, 8, 0.05, 'earth.towerRockRadius');
+        R(impact, c, 'shakeIntensity', 0, 4, 0.01, 'earth.shakeIntensity');
+        R(impact, c, 'shakeDuration', 0.1, 4, 0.01, 'earth.shakeDuration');
+        R(impact, c, 'explosionFlash', 0, 2, 0.01, 'earth.explosionFlash');
       },
 
       wind: () => {
-        const spiral = folder.addFolder('Spiral');
-        R(spiral, c, 'ribbonCount', 1, 8, 1, 'sheet count');
-        R(spiral, c, 'ribbonWidth', 0.05, 6, 0.01, 'sheet width');
-        R(spiral, c, 'ribbonOpacity', 0, 2, 0.01, 'ribbon opacity');
-        R(spiral, c, 'ribbonLength', 1, 24, 0.1, 'ribbon length');
-        R(spiral, c, 'spiralRadius', 0.05, 4, 0.01, 'spiral radius');
-        // Past a half turn the roll puts a zero-width seam in view.
-        R(spiral, c, 'sheetTwist', 0, 3.14, 0.01, 'sheet roll');
-        R(spiral, c, 'rotationSpeed', 0, 20, 0.05, 'rotation speed');
-        R(spiral, c, 'vortexStrength', 0, 5, 0.01, 'vortex strength');
-        R(spiral, c, 'swirlSpeed', 0, 8, 0.01, 'swirl speed');
-        R(spiral, c, 'filamentCount', 1, 64, 1, 'hairlines/sheet');
-        R(spiral, c, 'filamentSharpness', 0, 1, 0.01, 'hairline sharpness');
-        R(spiral, c, 'turbulence', 0, 3, 0.01, 'turbulence');
-        R(spiral, c, 'haze', 0, 2, 0.01, 'vapour haze');
-        R(spiral, c, 'opacity', 0, 2, 0.01, 'opacity');
-        R(spiral, c, 'glow', 0, 5, 0.01, 'glow');
-        R(spiral, c, 'fresnel', 0, 5, 0.01, 'fresnel');
-        R(spiral, c, 'distortion', 0, 4, 0.01, 'distortion');
-        R(spiral, c, 'noiseStrength', 0, 3, 0.01, 'noise strength');
-        R(spiral, c, 'noiseFrequency', 0.1, 6, 0.01, 'noise frequency');
-        spiral.addColor(c, 'colorInner').name('안쪽 색');
-        spiral.addColor(c, 'colorOuter').name('바깥 색');
+        const spiral = Editor.folder(folder, 'wind.spiral');
+        R(spiral, c, 'ribbonCount', 1, 8, 1, 'wind.ribbonCount');
+        R(spiral, c, 'ribbonWidth', 0.05, 6, 0.01, 'wind.ribbonWidth');
+        R(spiral, c, 'ribbonOpacity', 0, 2, 0.01, 'wind.ribbonOpacity');
+        R(spiral, c, 'ribbonLength', 1, 24, 0.1, 'wind.ribbonLength');
+        R(spiral, c, 'spiralRadius', 0.05, 4, 0.01, 'wind.spiralRadius');
+        R(spiral, c, 'sheetTwist', 0, 3.14, 0.01, 'wind.sheetTwist');
+        R(spiral, c, 'rotationSpeed', 0, 20, 0.05, 'wind.rotationSpeed');
+        R(spiral, c, 'vortexStrength', 0, 5, 0.01, 'wind.vortexStrength');
+        R(spiral, c, 'swirlSpeed', 0, 8, 0.01, 'wind.swirlSpeed');
+        R(spiral, c, 'filamentCount', 1, 64, 1, 'wind.filamentCount');
+        R(spiral, c, 'filamentSharpness', 0, 1, 0.01, 'wind.filamentSharpness');
+        R(spiral, c, 'turbulence', 0, 3, 0.01, 'wind.turbulence');
+        R(spiral, c, 'haze', 0, 2, 0.01, 'wind.haze');
+        R(spiral, c, 'opacity', 0, 2, 0.01, 'wind.opacity');
+        R(spiral, c, 'glow', 0, 5, 0.01, 'wind.glow');
+        R(spiral, c, 'fresnel', 0, 5, 0.01, 'wind.fresnel');
+        R(spiral, c, 'distortion', 0, 4, 0.01, 'wind.distortion');
+        R(spiral, c, 'noiseStrength', 0, 3, 0.01, 'wind.noiseStrength');
+        R(spiral, c, 'noiseFrequency', 0.1, 6, 0.01, 'wind.noiseFrequency');
+        Editor.color(spiral, c, 'colorInner', 'trail.innerColour');
+        Editor.color(spiral, c, 'colorOuter', 'trail.outerColour');
 
-        const debris = folder.addFolder('Leaves & dust');
-        R(debris, c, 'leafCount', 0, 200, 1, 'leaf count/s');
-        R(debris, c, 'leafSize', 0.02, 0.8, 0.005, 'leaf size');
-        R(debris, c, 'leafSpin', 0, 12, 0.05, 'leaf spin');
-        R(debris, c, 'leafLifetime', 0.2, 6, 0.05, 'leaf lifetime');
-        R(debris, c, 'dustAmount', 0, 3, 0.01, 'dust amount');
-        R(debris, c, 'dustSize', 0.05, 3, 0.01, 'dust size');
-        R(debris, c, 'dustRate', 0, 400, 1, 'dust rate');
+        const debris = Editor.folder(folder, 'wind.debris');
+        R(debris, c, 'leafCount', 0, 200, 1, 'wind.leafCount');
+        R(debris, c, 'leafSize', 0.02, 0.8, 0.005, 'wind.leafSize');
+        R(debris, c, 'leafSpin', 0, 12, 0.05, 'wind.leafSpin');
+        R(debris, c, 'leafLifetime', 0.2, 6, 0.05, 'wind.leafLife');
+        R(debris, c, 'dustAmount', 0, 3, 0.01, 'wind.dustAmount');
+        R(debris, c, 'dustSize', 0.05, 3, 0.01, 'wind.dustSize');
+        R(debris, c, 'dustRate', 0, 400, 1, 'wind.dustRate');
 
-        const impact = folder.addFolder('Tornado');
-        R(impact, c, 'tornadoHeight', 1, 20, 0.1, 'tornado height');
-        R(impact, c, 'tornadoRadius', 0.2, 8, 0.05, 'tornado radius');
-        R(impact, c, 'tornadoDuration', 0.2, 6, 0.05, 'tornado duration');
-        R(impact, c, 'tornadoNeck', 0.04, 0.8, 0.01, 'funnel neck');
-        R(impact, c, 'tornadoShells', 1, 4, 1, 'funnel shells');
-        R(impact, c, 'tornadoRoughness', 0, 0.5, 0.01, 'funnel roughness');
-        R(impact, c, 'tornadoLean', 0, 1.5, 0.01, 'funnel lean');
-        R(impact, c, 'burstIntensity', 0, 5, 0.01, 'burst intensity');
-        R(impact, c, 'explosionShake', 0, 3, 0.01, 'shake');
-        R(impact, c, 'explosionFlash', 0, 2, 0.01, 'screen flash');
+        const impact = Editor.folder(folder, 'wind.tornado');
+        R(impact, c, 'tornadoHeight', 1, 20, 0.1, 'wind.tornadoHeight');
+        R(impact, c, 'tornadoRadius', 0.2, 8, 0.05, 'wind.tornadoRadius');
+        R(impact, c, 'tornadoDuration', 0.2, 6, 0.05, 'wind.tornadoDuration');
+        R(impact, c, 'tornadoNeck', 0.04, 0.8, 0.01, 'wind.tornadoNeck');
+        R(impact, c, 'tornadoShells', 1, 4, 1, 'wind.tornadoShells');
+        R(impact, c, 'tornadoRoughness', 0, 0.5, 0.01, 'wind.tornadoRoughness');
+        R(impact, c, 'tornadoLean', 0, 1.5, 0.01, 'wind.tornadoLean');
+        R(impact, c, 'burstIntensity', 0, 5, 0.01, 'wind.burstIntensity');
+        R(impact, c, 'explosionShake', 0, 3, 0.01, 'wind.explosionShake');
+        R(impact, c, 'explosionFlash', 0, 2, 0.01, 'wind.explosionFlash');
       }
     };
 
     build[element]?.();
 
-    const light = folder.addFolder('Dynamic light');
-    Editor.range(light, c, 'lightIntensity', 0, 80, 0.1, 'light intensity');
-    Editor.range(light, c, 'lightRadius', 0.5, 40, 0.1, 'light radius');
-    light.addColor(c, 'lightColor').name('light colour');
+    // 동적 광원 — 4 원소 모두 공통
+    const light = Editor.folder(folder, 'element.commonLight');
+    R(light, c, 'lightIntensity', 0, 80, 0.1, 'common.lightIntensity');
+    R(light, c, 'lightRadius', 0.5, 40, 0.1, 'common.lightRadius');
+    Editor.color(light, c, 'lightColor', 'common.lightColour');
+
+    // 동적 폴더 제목 (element.{name}.folder) 갱신 지원
+    folder.__refreshTitle = () => {
+      const label = t(`element.${element}.label`);
+      folder.title(`${glyphFor(element)}  ${label}`);
+    };
   }
 
   _buildEnvironment() {
-    const folder = this.gui.addFolder('Environment');
+    const folder = Editor.folder(this.gui, 'folder.environment');
     const e = settings.environment;
     const R = Editor.range;
 
-    R(folder, e, 'sunIntensity', 0, 8, 0.01, 'key intensity');
-    folder.addColor(e, 'sunColor').name('key colour');
-    R(folder, e, 'sunAzimuth', 0, Math.PI * 2, 0.01, 'key azimuth');
-    R(folder, e, 'sunElevation', 0.05, 1.5, 0.01, 'key elevation');
-    R(folder, e, 'ambientIntensity', 0, 3, 0.01, 'ambient');
-    folder.addColor(e, 'ambientColor').name('ambient colour');
-    R(folder, e, 'hemiIntensity', 0, 3, 0.01, 'hemisphere');
-    R(folder, e, 'envIntensity', 0, 3, 0.01, 'env (IBL)');
-    R(folder, e, 'shadowRadius', 0, 8, 0.05, 'shadow softness');
-    R(folder, e, 'shadowBias', -0.01, 0.001, 0.0001, 'shadow bias');
-    R(folder, e, 'contactShadow', 0, 1.5, 0.01, 'contact shadow');
+    R(folder, e, 'sunIntensity', 0, 8, 0.01, 'env.sunIntensity');
+    Editor.color(folder, e, 'sunColor', 'env.sunColour');
+    R(folder, e, 'sunAzimuth', 0, Math.PI * 2, 0.01, 'env.sunAzimuth');
+    R(folder, e, 'sunElevation', 0.05, 1.5, 0.01, 'env.sunElevation');
+    R(folder, e, 'ambientIntensity', 0, 3, 0.01, 'env.ambient');
+    Editor.color(folder, e, 'ambientColor', 'env.ambientColour');
+    R(folder, e, 'hemiIntensity', 0, 3, 0.01, 'env.hemiIntensity');
+    R(folder, e, 'envIntensity', 0, 3, 0.01, 'env.envIntensity');
+    R(folder, e, 'shadowRadius', 0, 8, 0.05, 'env.shadowRadius');
+    R(folder, e, 'shadowBias', -0.01, 0.001, 0.0001, 'env.shadowBias');
+    R(folder, e, 'contactShadow', 0, 1.5, 0.01, 'env.contactShadow');
 
-    const rim = folder.addFolder('Rim light');
-    R(rim, e, 'rimIntensity', 0, 4, 0.01, 'rim intensity');
-    rim.addColor(e, 'rimColor').name('rim colour');
-    R(rim, e, 'rimAzimuth', 0, Math.PI * 2, 0.01, 'rim azimuth');
-    R(rim, e, 'rimElevation', 0.05, 1.5, 0.01, 'rim elevation');
-    rim.addColor(e, 'hemiSkyColor').name('hemi sky');
-    rim.addColor(e, 'hemiGroundColor').name('hemi bounce');
+    const rim = Editor.folder(folder, 'env.rim');
+    R(rim, e, 'rimIntensity', 0, 4, 0.01, 'env.rimIntensity');
+    Editor.color(rim, e, 'rimColor', 'env.rimColour');
+    R(rim, e, 'rimAzimuth', 0, Math.PI * 2, 0.01, 'env.rimAzimuth');
+    R(rim, e, 'rimElevation', 0.05, 1.5, 0.01, 'env.rimElevation');
+    Editor.color(rim, e, 'hemiSkyColor', 'env.hemiSky');
+    Editor.color(rim, e, 'hemiGroundColor', 'env.hemiGround');
 
-    const fog = folder.addFolder('Backdrop, fog & dust');
-    fog.addColor(e, 'backgroundColor').name('backdrop');
-    fog.addColor(e, 'fogColor').name('fog colour');
-    R(fog, e, 'fogNear', 1, 120, 1, 'fog near');
-    R(fog, e, 'fogFar', 10, 400, 1, 'fog far');
-    R(fog, e, 'dustAmount', 0, 3, 0.01, 'floating dust');
+    const fog = Editor.folder(folder, 'env.backdrop');
+    Editor.color(fog, e, 'backgroundColor', 'env.background');
+    Editor.color(fog, e, 'fogColor', 'env.fogColour');
+    R(fog, e, 'fogNear', 1, 120, 1, 'env.fogNear');
+    R(fog, e, 'fogFar', 10, 400, 1, 'env.fogFar');
+    R(fog, e, 'dustAmount', 0, 3, 0.01, 'env.dustMotes');
 
-    const floor = folder.addFolder('Stage floor');
-    floor.addColor(e, 'floorColor').name('floor colour');
-    floor.addColor(e, 'floorTint').name('floor tint');
-    R(floor, e, 'floorRoughness', 0.05, 1, 0.01, 'roughness');
-    R(floor, e, 'floorSheen', 0, 1, 0.01, 'sheen');
-    R(floor, e, 'floorPool', 0, 1, 0.01, 'light pool');
+    const floor = Editor.folder(folder, 'env.floor');
+    Editor.color(floor, e, 'floorColor', 'env.floorColour');
+    Editor.color(floor, e, 'floorTint', 'env.floorTint');
+    R(floor, e, 'floorRoughness', 0.05, 1, 0.01, 'env.floorRoughness');
+    R(floor, e, 'floorSheen', 0, 1, 0.01, 'env.floorSheen');
+    R(floor, e, 'floorPool', 0, 1, 0.01, 'env.floorPool');
   }
 
   _buildPost() {
-    const folder = this.gui.addFolder('Post processing');
+    const folder = Editor.folder(this.gui, 'folder.post');
     const p = settings.post;
     const R = Editor.range;
 
-    folder.add(p, 'enabled').name('enabled');
-    R(folder, p, 'exposure', 0.1, 3, 0.01, 'exposure');
-    R(folder, p, 'bloomStrength', 0, 3, 0.01, 'bloom intensity');
-    R(folder, p, 'bloomRadius', 0, 1.5, 0.01, 'bloom radius');
-    R(folder, p, 'bloomThreshold', 0, 2, 0.01, 'bloom threshold');
-    R(folder, p, 'contrast', 0.5, 2, 0.01, 'contrast');
-    R(folder, p, 'saturation', 0, 2.5, 0.01, 'saturation');
-    R(folder, p, 'temperature', -0.5, 0.5, 0.01, 'temperature');
-    R(folder, p, 'lift', -0.2, 0.2, 0.005, 'lift');
-    R(folder, p, 'gain', 0.5, 2, 0.01, 'gain');
-    R(folder, p, 'vignette', 0, 1.5, 0.01, 'vignette');
-    R(folder, p, 'chromaticAberration', 0, 3, 0.01, 'chromatic aberration');
-    R(folder, p, 'grain', 0, 0.2, 0.001, 'film grain');
-    R(folder, p, 'flashStrength', 0, 2, 0.01, 'impact flash');
+    Editor.label(folder, p, 'enabled', 'post.enabled');
+    R(folder, p, 'exposure', 0.1, 3, 0.01, 'post.exposure');
+    R(folder, p, 'bloomStrength', 0, 3, 0.01, 'post.bloomStrength');
+    R(folder, p, 'bloomRadius', 0, 1.5, 0.01, 'post.bloomRadius');
+    R(folder, p, 'bloomThreshold', 0, 2, 0.01, 'post.bloomThreshold');
+    R(folder, p, 'contrast', 0.5, 2, 0.01, 'post.contrast');
+    R(folder, p, 'saturation', 0, 2.5, 0.01, 'post.saturation');
+    R(folder, p, 'temperature', -0.5, 0.5, 0.01, 'post.temperature');
+    R(folder, p, 'lift', -0.2, 0.2, 0.005, 'post.lift');
+    R(folder, p, 'gain', 0.5, 2, 0.01, 'post.gain');
+    R(folder, p, 'vignette', 0, 1.5, 0.01, 'post.vignette');
+    R(folder, p, 'chromaticAberration', 0, 3, 0.01, 'post.chromatic');
+    R(folder, p, 'grain', 0, 0.2, 0.001, 'post.grain');
+    R(folder, p, 'flashStrength', 0, 2, 0.01, 'post.flash');
   }
 
   _buildCamera() {
-    const folder = this.gui.addFolder('Camera');
+    const folder = Editor.folder(this.gui, 'folder.camera');
     const c = settings.camera;
     const R = Editor.range;
 
-    // The wheel writes `distance` straight into settings, so the slider listens.
-    R(folder, c, 'distance', 1, 40, 0.1, 'distance').listen();
-    R(folder, c, 'minDistance', 1, 20, 0.1, 'min distance');
-    R(folder, c, 'maxDistance', 4, 40, 0.1, 'max distance');
-    R(folder, c, 'zoomSpeed', 0.1, 3, 0.01, 'zoom speed');
-    R(folder, c, 'fov', 20, 90, 0.5, 'field of view');
-    R(folder, c, 'targetHeight', 0, 4, 0.01, 'target height');
-    R(folder, c, 'minPolar', 0.05, 1.5, 0.01, 'min pitch');
-    R(folder, c, 'maxPolar', 0.2, 1.55, 0.01, 'max pitch');
-    R(folder, c, 'damping', 0.001, 0.5, 0.001, 'follow damping');
-    R(folder, c, 'autoFrame', 0, 1, 0.01, 'auto framing');
+    // 휠은 `distance`를 settings에 직접 쓰므로 슬라이더는 listen().
+    R(folder, c, 'distance', 1, 40, 0.1, 'camera.distance').listen();
+    R(folder, c, 'minDistance', 1, 20, 0.1, 'camera.minDistance');
+    R(folder, c, 'maxDistance', 4, 40, 0.1, 'camera.maxDistance');
+    R(folder, c, 'zoomSpeed', 0.1, 3, 0.01, 'camera.zoomSpeed');
+    R(folder, c, 'fov', 20, 90, 0.5, 'camera.fov');
+    R(folder, c, 'targetHeight', 0, 4, 0.01, 'camera.targetHeight');
+    R(folder, c, 'minPolar', 0.05, 1.5, 0.01, 'camera.minPitch');
+    R(folder, c, 'maxPolar', 0.2, 1.55, 0.01, 'camera.maxPitch');
+    R(folder, c, 'damping', 0.001, 0.5, 0.001, 'camera.damping');
+    R(folder, c, 'autoFrame', 0, 1, 0.01, 'camera.autoFrame');
 
-    folder.add({ clear: () => this.hooks.onClear?.() }, 'clear').name('Clear effects (C)');
+    Editor.label(folder, { clear: () => this.hooks.onClear?.() }, 'clear', 'camera.clear');
   }
 
   _buildCharacter() {
-    const folder = this.gui.addFolder('Character');
+    const folder = Editor.folder(this.gui, 'folder.character');
     const c = settings.character;
     const R = Editor.range;
 
-    // The controller polls `pose` every frame, so the dropdown needs no handler.
-    folder.add(c, 'pose', ['idle', 'sitting']).name('pose (T)');
-    R(folder, c, 'blendTime', 0.05, 3, 0.01, 'blend time');
-    R(folder, settings.global, 'animationSpeed', 0.1, 3, 0.01, 'idle speed');
+    // 컨트롤러가 `pose`를 매 프레임 폴링하므로 드롭다운은 핸들러 불요.
+    Editor.label(folder, c, 'pose', 'character.pose');
+    R(folder, c, 'blendTime', 0.05, 3, 0.01, 'character.blendTime');
+    R(folder, settings.global, 'animationSpeed', 0.1, 3, 0.01, 'character.idleSpeed');
 
-    // Everything below re-bakes the seated pose when it changes.
-    R(folder, c, 'breathing', 0, 3, 0.01, 'breathing');
-    R(folder, c, 'breathRate', 0.05, 1, 0.01, 'breaths / sec');
-    R(folder, c, 'legSpread', 0.6, 1.4, 0.01, 'leg spread');
-    R(folder, c, 'torsoLean', -20, 20, 0.5, 'torso lean');
-    R(folder, c, 'seatClearance', 0, 0.08, 0.002, 'seat clearance');
-    R(folder, c, 'handHeight', 0, 0.25, 0.005, 'hand height');
-    folder.add(c, 'handsOnKnees').name('hands on knees');
+    // 아래 항목들은 seated pose 가 바뀔 때마다 재구성된다.
+    R(folder, c, 'breathing', 0, 3, 0.01, 'character.breathing');
+    R(folder, c, 'breathRate', 0.05, 1, 0.01, 'character.breathRate');
+    R(folder, c, 'legSpread', 0.6, 1.4, 0.01, 'character.legSpread');
+    R(folder, c, 'torsoLean', -20, 20, 0.5, 'character.torsoLean');
+    R(folder, c, 'seatClearance', 0, 0.08, 0.002, 'character.seatClearance');
+    R(folder, c, 'handHeight', 0, 0.25, 0.005, 'character.handHeight');
+    Editor.label(folder, c, 'handsOnKnees', 'character.handsOnKnees');
   }
 
   _buildWalk() {
-    const folder = this.gui.addFolder('◎  Walk mode');
+    const folder = Editor.folder(this.gui, 'folder.walk');
     const c = settings.walk;
     const R = Editor.range;
 
-    // App polls `settings.mode` every frame, so this needs no handler either.
-    folder.add(settings, 'mode', MODES).name('mode (M)');
+    folder.__refreshTitle = () => {
+      const label = t('mode.walk.label');
+      folder.title(`◎  ${label}`);
+    };
+    folder.__refreshTitle();
 
-    const leap = folder.addFolder('Leap');
-    R(leap, c, 'jumpSpeed', 1, 20, 0.1, 'leap speed');
-    R(leap, c, 'jumpHeight', 0, 6, 0.05, 'leap height');
-    R(leap, c, 'jumpMin', 0.1, 2, 0.05, 'min duration');
-    R(leap, c, 'jumpMax', 0.2, 3, 0.05, 'max duration');
-    R(leap, c, 'tuck', 0, 1, 0.01, 'fold at');
-    R(leap, c, 'poseBlend', 0.05, 2, 0.01, 'pose blend');
-    R(leap, c, 'landShake', 0, 3, 0.01, 'landing shake');
+    // App이 매 프레임 `settings.mode`를 폴링하므로 핸들러 불요.
+    const modeController = folder.add(settings, 'mode', MODES).name(t('mode.walk.label') + ' / ' + t('mode.casting.label'));
+    modeController.__i18nKey = 'walk.mode';
 
-    const ride = folder.addFolder('Ride');
-    R(ride, c, 'speed', 0.5, 16, 0.1, 'ride speed');
-    R(ride, c, 'accel', 0.01, 3, 0.01, 'spin-up time');
-    R(ride, c, 'brake', 0.05, 3, 0.01, 'braking time');
-    R(ride, c, 'dismountTime', 0.1, 2, 0.01, 'dismount time');
-    R(ride, c, 'hover', 0, 0.5, 0.005, 'ground clearance');
-    R(ride, c, 'seatSink', 0, 1, 0.01, 'seat sink');
-    R(ride, c, 'bob', 0, 0.3, 0.005, 'bounce');
-    R(ride, c, 'bobRate', 0.2, 8, 0.05, 'bounces / sec');
-    R(ride, c, 'lean', 0, 60, 0.5, 'bank angle');
-    R(ride, c, 'leanRate', 0.2, 6, 0.05, 'full-bank turn rate');
-    R(ride, c, 'leanDamping', 0.00005, 0.2, 0.00005, 'bank follow');
-    R(ride, c, 'turnDamping', 0.000001, 0.01, 0.000001, 'turn follow');
-    ride.add(c, 'returnHome').name('leap home after');
+    const leap = Editor.folder(folder, 'walk.leap');
+    R(leap, c, 'jumpSpeed', 1, 20, 0.1, 'walk.jumpSpeed');
+    R(leap, c, 'jumpHeight', 0, 6, 0.05, 'walk.jumpHeight');
+    R(leap, c, 'jumpMin', 0.1, 2, 0.05, 'walk.jumpMin');
+    R(leap, c, 'jumpMax', 0.2, 3, 0.05, 'walk.jumpMax');
+    R(leap, c, 'tuck', 0, 1, 0.01, 'walk.tuck');
+    R(leap, c, 'poseBlend', 0.05, 2, 0.01, 'walk.poseBlend');
+    R(leap, c, 'landShake', 0, 3, 0.01, 'walk.landShake');
 
-    const ball = folder.addFolder('Air ball');
-    R(ball, c, 'radius', 0.1, 1.5, 0.01, 'radius');
-    R(ball, c, 'squash', 0, 0.6, 0.01, 'squash');
-    R(ball, c, 'spin', 0, 8, 0.01, 'swirl speed');
-    // Non-integer band counts leave a seam where the longitude wraps.
-    R(ball, c, 'bands', 2, 20, 1, 'streamlines');
-    R(ball, c, 'twist', 0, 8, 0.01, 'pole-to-pole twist');
-    R(ball, c, 'filamentSharp', 0, 1, 0.01, 'strand sharpness');
-    R(ball, c, 'turbulence', 0, 3, 0.01, 'turbulence');
-    R(ball, c, 'haze', 0, 2, 0.01, 'vapour haze');
-    R(ball, c, 'wobble', 0, 0.5, 0.01, 'silhouette wobble');
-    R(ball, c, 'fresnel', 0, 5, 0.01, 'fresnel');
-    R(ball, c, 'opacity', 0, 2, 0.01, 'opacity');
-    R(ball, c, 'glow', 0, 5, 0.01, 'glow');
-    ball.addColor(c, 'colorInner').name('안쪽 색');
-    ball.addColor(c, 'colorOuter').name('바깥 색');
+    const ride = Editor.folder(folder, 'walk.ride');
+    R(ride, c, 'speed', 0.5, 16, 0.1, 'walk.speed');
+    R(ride, c, 'accel', 0.01, 3, 0.01, 'walk.accel');
+    R(ride, c, 'brake', 0.05, 3, 0.01, 'walk.brake');
+    R(ride, c, 'dismountTime', 0.1, 2, 0.01, 'walk.dismountTime');
+    R(ride, c, 'hover', 0, 0.5, 0.005, 'walk.hover');
+    R(ride, c, 'seatSink', 0, 1, 0.01, 'walk.seatSink');
+    R(ride, c, 'bob', 0, 0.3, 0.005, 'walk.bob');
+    R(ride, c, 'bobRate', 0.2, 8, 0.05, 'walk.bobRate');
+    R(ride, c, 'lean', 0, 60, 0.5, 'walk.lean');
+    R(ride, c, 'leanRate', 0.2, 6, 0.05, 'walk.leanRate');
+    R(ride, c, 'leanDamping', 0.00005, 0.2, 0.00005, 'walk.leanDamping');
+    R(ride, c, 'turnDamping', 0.000001, 0.01, 0.000001, 'walk.turnDamping');
+    Editor.label(ride, c, 'returnHome', 'walk.returnHome');
 
-    const debris = folder.addFolder('Dust & light');
-    R(debris, c, 'dustRate', 0, 600, 1, 'dust rate');
-    R(debris, c, 'dustSize', 0.05, 3, 0.01, 'dust size');
-    R(debris, c, 'dustLifetime', 0.1, 4, 0.05, 'dust lifetime');
-    R(debris, c, 'lightIntensity', 0, 40, 0.1, 'light intensity');
-    R(debris, c, 'lightRadius', 0.5, 30, 0.1, 'light radius');
-    debris.addColor(c, 'lightColor').name('light colour');
+    const ball = Editor.folder(folder, 'walk.ball');
+    R(ball, c, 'radius', 0.1, 1.5, 0.01, 'walk.radius');
+    R(ball, c, 'squash', 0, 0.6, 0.01, 'walk.squash');
+    R(ball, c, 'spin', 0, 8, 0.01, 'walk.spin');
+    R(ball, c, 'bands', 2, 20, 1, 'walk.bands');
+    R(ball, c, 'twist', 0, 8, 0.01, 'walk.twist');
+    R(ball, c, 'filamentSharp', 0, 1, 0.01, 'walk.filamentSharp');
+    R(ball, c, 'turbulence', 0, 3, 0.01, 'walk.turbulence');
+    R(ball, c, 'haze', 0, 2, 0.01, 'walk.haze');
+    R(ball, c, 'wobble', 0, 0.5, 0.01, 'walk.wobble');
+    R(ball, c, 'fresnel', 0, 5, 0.01, 'walk.fresnel');
+    R(ball, c, 'opacity', 0, 2, 0.01, 'walk.opacity');
+    R(ball, c, 'glow', 0, 5, 0.01, 'walk.glow');
+    Editor.color(ball, c, 'colorInner', 'trail.innerColour');
+    Editor.color(ball, c, 'colorOuter', 'trail.outerColour');
+
+    const debris = Editor.folder(folder, 'walk.debris');
+    R(debris, c, 'dustRate', 0, 600, 1, 'walk.dustRate');
+    R(debris, c, 'dustSize', 0.05, 3, 0.01, 'walk.dustSize');
+    R(debris, c, 'dustLifetime', 0.1, 4, 0.05, 'walk.dustLife');
+    R(debris, c, 'lightIntensity', 0, 40, 0.1, 'walk.lightIntensity');
+    R(debris, c, 'lightRadius', 0.5, 30, 0.1, 'walk.lightRadius');
+    Editor.color(debris, c, 'lightColor', 'common.lightColour');
 
     this.walkFolder = folder;
   }
 
   dispose() {
+    this._unsubscribeLocale?.();
     this.gui.destroy();
   }
+}
+
+/** 원소별 HUD 글리프 (원본 settings.ELEMENT_META.glyph와 동기화). */
+function glyphFor(element) {
+  return ({ fire: '🜂', water: '🜄', earth: '🜃', wind: '🜁' })[element] ?? '';
 }

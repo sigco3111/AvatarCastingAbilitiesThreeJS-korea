@@ -418,6 +418,55 @@ body {
   right: 16px;
 }
 
+/* 한/영 토글 단추 (HUD 우측 상단) */
+.hud__lang-toggle {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(8, 12, 22, 0.7);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 120ms ease, transform 120ms ease;
+}
+.hud__lang-toggle:hover {
+  background: rgba(20, 28, 48, 0.85);
+  transform: translateY(-1px);
+}
+.hud__lang-toggle:active { transform: translateY(0); }
+.hud__lang-toggle__cur { color: #ffd76b; }
+.hud__lang-toggle__sep { opacity: 0.5; }
+.hud__lang-toggle__alt { opacity: 0.6; font-weight: 500; }
+
+/* 활성 카드 표시 */
+.element-card--active {
+  outline: 2px solid rgba(255, 215, 107, 0.95);
+  outline-offset: 2px;
+  transform: translateY(-2px);
+}
+.mode-card--active {
+  background: rgba(255, 215, 107, 0.18);
+  outline: 1px solid rgba(255, 215, 107, 0.85);
+}
+
+/* 도움말 패널 숨김 (H 키) */
+.hud__help--hidden { display: none; }
+
+/* 로더 실패 상태 */
+.loader--failed { border-color: rgba(255, 107, 107, 0.6); }
+.loader--hidden { opacity: 0; pointer-events: none; transition: opacity 280ms ease; }
+
 @media (max-width: 760px) {
   .hud__help,
   .hud__stats {

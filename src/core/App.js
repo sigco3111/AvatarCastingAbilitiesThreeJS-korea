@@ -29,6 +29,7 @@ import { PostProcessing } from '../postprocessing/PostProcessing.js';
 
 import { HUD, LoadingScreen } from '../ui/HUD.js';
 import { Editor } from '../ui/Editor.js';
+import { t } from '../ui/i18n.js';
 
 import { settings, ELEMENTS, MODES, MODE_META } from '../config/settings.js';
 
@@ -142,7 +143,7 @@ export class App {
     // One gesture, two meanings — the mode decides what a finished stroke does.
     this.pathDrawer.on('cast', (curve) => {
       if (settings.mode === 'walk') {
-        if (!this.walk.begin(curve)) this.hud.showToast('Path too short to ride');
+        if (!this.walk.begin(curve)) this.hud.showToast(t('toast.pathTooShort'));
       } else {
         this.abilities.cast(curve);
       }
@@ -169,16 +170,16 @@ export class App {
         break;
       case 'clear':
         this.clearEffects();
-        this.hud.showToast('Effects cleared');
+        this.hud.showToast(t('toast.effectsCleared'));
         break;
       case 'togglePause':
         this.paused = !this.paused;
-        this.hud.showToast(this.paused ? 'Paused' : 'Resumed');
+        this.hud.showToast(this.paused ? t('toast.paused') : t('toast.resumed'));
         break;
       case 'togglePose': {
         const pose = this.character.togglePose();
         this.editor.refresh();
-        this.hud.showToast(pose === 'sitting' ? 'Meditation pose' : 'Standing idle');
+        this.hud.showToast(pose === 'sitting' ? t('toast.poseSitting') : t('toast.poseStanding'));
         break;
       }
       case 'toggleMode':
@@ -210,7 +211,7 @@ export class App {
 
     if (next !== 'walk') this.walk.cancel();
     this.hud.setMode(next);
-    if (changed) this.hud.showToast(`${MODE_META[next].hint} — ${MODE_META[next].blurb}`);
+    if (changed) this.hud.showToast(`${t('mode.' + next + '.hint')} — ${t('mode.' + next + '.blurb')}`);
     this.editor.refresh();
   }
 
@@ -232,19 +233,19 @@ export class App {
   async load() {
     const assets = new AssetLoader();
 
-    this.loading.setProgress(0.05, 'Loading environment…');
+    this.loading.setProgress(0.05, t('app.loadingEnvironment'));
     const hdr = await assets.loadHDR(HDR_URL);
     await this.environment.loadEnvironment(hdr);
     frame.uEnvMap.value = this.environment.equirect;
 
-    this.loading.setProgress(0.5, 'Loading character…');
+    this.loading.setProgress(0.5, t('app.loadingCharacter'));
     await this.character.load(assets);
 
-    this.loading.setProgress(0.85, 'Compiling shaders…');
+    this.loading.setProgress(0.85, t('app.loadingShaders'));
     // Compile everything up front so the first cast never stutters.
     await this.renderer.gl.compileAsync(this.scene, this.camera);
 
-    this.loading.setProgress(1, 'Ready');
+    this.loading.setProgress(1, t('app.loadingReady'));
     this.loading.hide();
 
     this.start();
