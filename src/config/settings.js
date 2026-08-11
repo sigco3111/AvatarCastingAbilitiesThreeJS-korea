@@ -562,16 +562,16 @@ export const MODES = ['casting', 'walk'];
 
 /** Presentation metadata for the HUD's mode switch. */
 export const MODE_META = {
-  casting: { label: 'Cast', glyph: '✦', hint: 'Casting mode', blurb: 'Draw a path. Release to cast.' },
-  walk: { label: 'Walk', glyph: '◎', hint: 'Walk mode', blurb: 'Draw a path. Release to ride it.' }
+  casting: { label: '시전', glyph: '✦', hint: '시전 모드', blurb: '경로를 그리고 떼면 시전합니다.' },
+  walk: { label: '탑승', glyph: '◎', hint: '탑승 모드', blurb: '경로를 그리고 떼면 그 위를 탑니다.' }
 };
 
 /** Presentation metadata for the HUD. */
 export const ELEMENT_META = {
-  fire: { label: 'Fire', accent: '#ff6a1a', glyph: '🜂', hint: 'Firebending' },
-  water: { label: 'Water', accent: '#31b6ff', glyph: '🜄', hint: 'Waterbending' },
-  earth: { label: 'Earth', accent: '#b98a4d', glyph: '🜃', hint: 'Earthbending' },
-  wind: { label: 'Air', accent: '#c9f0ff', glyph: '🜁', hint: 'Airbending' }
+  fire: { label: '불', accent: '#ff6a1a', glyph: '🜂', hint: '불 굴리기' },
+  water: { label: '물', accent: '#31b6ff', glyph: '🜄', hint: '물 굴리기' },
+  earth: { label: '흙', accent: '#b98a4d', glyph: '🜃', hint: '흙 굴리기' },
+  wind: { label: '공기', accent: '#c9f0ff', glyph: '🜁', hint: '공기 굴리기' }
 };
 
 /** Immutable snapshot used by "Reset to defaults" and the preset system. */

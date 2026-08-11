@@ -20,28 +20,28 @@ export class HUD {
 
     root.innerHTML = `
       <div class="hud__panel hud__title">
-        Bending Sandbox
-        <span data-blurb>Draw a path. Release to cast.</span>
+        원소 조형 샌드박스
+        <span data-blurb>경로를 그리고, 마우스를 떼면 시전합니다.</span>
       </div>
 
       <div class="hud__panel hud__stats">
         <div>FPS <b data-stat="fps">—</b></div>
-        <div>Particles <b data-stat="particles">0</b></div>
-        <div>Draw calls <b data-stat="calls">0</b></div>
-        <div>Abilities <b data-stat="abilities">0</b></div>
+        <div>파티클 <b data-stat="particles">0</b></div>
+        <div>드로우 콜 <b data-stat="calls">0</b></div>
+        <div>시전 중 <b data-stat="abilities">0</b></div>
       </div>
 
       <div class="hud__panel hud__help">
-        <div><strong>Hold left mouse</strong> — draw a path on the ground</div>
-        <div><strong>Release</strong> — cast the selected element</div>
-        <div><strong>Right drag</strong> — orbit the camera</div>
-        <div><strong>Scroll</strong> — zoom in / out</div>
+        <div><strong>왼쪽 마우스 드래그</strong> — 바닥에 경로를 그립니다</div>
+        <div><strong>마우스 떼기</strong> — 선택한 원소를 시전합니다</div>
+        <div><strong>오른쪽 드래그</strong> — 카메라를 회전합니다</div>
+        <div><strong>스크롤</strong> — 줌 인 / 아웃</div>
         <div style="margin-top:6px">
-          <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> elements &nbsp;
-          <kbd>Q</kbd><kbd>E</kbd> cycle
+          <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> 원소 선택 &nbsp;
+          <kbd>Q</kbd><kbd>E</kbd> 순환
         </div>
-        <div><kbd>G</kbd> editor &nbsp; <kbd>C</kbd> clear &nbsp; <kbd>P</kbd> pause &nbsp; <kbd>H</kbd> hide</div>
-        <div><kbd>T</kbd> sit / stand &nbsp; <kbd>M</kbd> cast / walk</div>
+        <div><kbd>G</kbd> 에디터 &nbsp; <kbd>C</kbd> 모두 지우기 &nbsp; <kbd>P</kbd> 일시정지 &nbsp; <kbd>H</kbd> 도움말 숨기기</div>
+        <div><kbd>T</kbd> 앉기 / 서기 &nbsp; <kbd>M</kbd> 시전 / 탑승 모드</div>
       </div>
 
       <div class="hud__modes">

@@ -61,22 +61,22 @@ export class Editor {
   /* ------------------------------------------------------------------ */
 
   _buildPresets() {
-    const folder = this.gui.addFolder('Presets');
+    const folder = this.gui.addFolder('프리셋');
     const state = this._presetState;
 
     let selector = folder
       .add(state, 'selected', this.presets.names.length ? this.presets.names : [''])
-      .name('preset');
+      .name('프리셋');
 
     // lil-gui rebuilds the controller when the option list changes, so the
     // reference has to be replaced rather than mutated.
     const refreshOptions = () => {
       const names = this.presets.names;
-      selector = selector.options(names.length ? names : ['']).name('preset');
+      selector = selector.options(names.length ? names : ['']).name('프리셋');
       selector.setValue(names.includes(state.selected) ? state.selected : (names[0] ?? ''));
     };
 
-    folder.add(state, 'name').name('name');
+    folder.add(state, 'name').name('이름');
 
     folder
       .add(
@@ -90,7 +90,7 @@ export class Editor {
         },
         'save'
       )
-      .name('Save preset');
+      .name('프리셋 저장');
 
     folder
       .add(
@@ -104,7 +104,7 @@ export class Editor {
         },
         'load'
       )
-      .name('Load preset');
+      .name('프리셋 불러오기');
 
     folder
       .add(
@@ -120,7 +120,7 @@ export class Editor {
         },
         'duplicate'
       )
-      .name('Duplicate');
+      .name('복제');
 
     folder
       .add(
@@ -134,10 +134,10 @@ export class Editor {
         },
         'remove'
       )
-      .name('Delete');
+      .name('삭제');
 
-    folder.add({ exportOne: () => this.presets.exportJSON() }, 'exportOne').name('Export current (JSON)');
-    folder.add({ exportAll: () => this.presets.exportAll() }, 'exportAll').name('Export all presets');
+    folder.add({ exportOne: () => this.presets.exportJSON() }, 'exportOne').name('현재 프리셋 내보내기 (JSON)');
+    folder.add({ exportAll: () => this.presets.exportAll() }, 'exportAll').name('모든 프리셋 내보내기');
 
     folder
       .add(
@@ -157,7 +157,7 @@ export class Editor {
         },
         'import'
       )
-      .name('Import JSON…');
+      .name('JSON 가져오기…');
 
     folder
       .add(
@@ -170,13 +170,13 @@ export class Editor {
         },
         'reset'
       )
-      .name('Reset to defaults');
+      .name('기본값으로 초기화');
 
     this.presetFolder = folder;
   }
 
   _buildGlobal() {
-    const folder = this.gui.addFolder('Global');
+    const folder = this.gui.addFolder('전역');
     const g = settings.global;
     const R = Editor.range;
 
@@ -194,14 +194,14 @@ export class Editor {
     R(folder, g, 'distortion', 0, 3, 0.01, 'distortion strength');
     R(folder, g, 'fresnel', 0, 3, 0.01, 'fresnel strength');
 
-    const particles = folder.addFolder('Particles');
+    const particles = folder.addFolder('파티클');
     R(particles, g, 'particleCount', 0, 3, 0.01, 'count');
     R(particles, g, 'particleLifetime', 0.1, 3, 0.01, 'lifetime');
     R(particles, g, 'particleSpeed', 0.1, 3, 0.01, 'speed');
     R(particles, g, 'particleSize', 0.1, 3, 0.01, 'size');
     R(particles, g, 'emissionRate', 0, 3, 0.01, 'emission rate');
 
-    const lighting = folder.addFolder('Lighting & impact');
+    const lighting = folder.addFolder('조명 & 충격');
     R(lighting, g, 'lightIntensity', 0, 4, 0.01, 'light intensity');
     R(lighting, g, 'lightRadius', 0.1, 4, 0.01, 'light radius');
     R(lighting, g, 'explosionIntensity', 0, 3, 0.01, 'explosion intensity');
@@ -212,7 +212,7 @@ export class Editor {
   }
 
   _buildTrail() {
-    const folder = this.gui.addFolder('Cast trail');
+    const folder = this.gui.addFolder('캐스트 트레일');
     const t = settings.trail;
     const R = Editor.range;
 
@@ -220,8 +220,8 @@ export class Editor {
     R(folder, t, 'length', 0.05, 1, 0.01, 'trail length');
     R(folder, t, 'opacity', 0, 2, 0.01, 'trail opacity');
     R(folder, t, 'glow', 0, 10, 0.01, 'trail glow');
-    folder.addColor(t, 'colorInner').name('inner colour');
-    folder.addColor(t, 'colorOuter').name('outer colour');
+    folder.addColor(t, 'colorInner').name('안쪽 색');
+    folder.addColor(t, 'colorOuter').name('바깥 색');
     R(folder, t, 'flowSpeed', 0, 6, 0.01, 'flow speed');
     R(folder, t, 'noiseStrength', 0, 2, 0.01, 'noise strength');
     R(folder, t, 'noiseFrequency', 0.1, 8, 0.01, 'noise frequency');
@@ -231,7 +231,7 @@ export class Editor {
     R(folder, t, 'sparkle', 0, 3, 0.01, 'sparkle');
     R(folder, t, 'height', 0.01, 1, 0.01, 'hover height');
 
-    const input = folder.addFolder('Drawing');
+    const input = folder.addFolder('그리기');
     R(input, settings.input, 'minPointDistance', 0.02, 1, 0.01, 'jitter filter');
     R(input, settings.input, 'minPathLength', 0.2, 8, 0.1, 'min path length');
     R(input, settings.input, 'smoothing', 0, 0.95, 0.01, 'smoothing');
@@ -250,11 +250,11 @@ export class Editor {
 
     const build = {
       fire: () => {
-        const flight = folder.addFolder('Flight');
+        const flight = folder.addFolder('비행');
         R(flight, c, 'flightHeight', 0, 8, 0.01, 'cruise height');
         R(flight, c, 'flightArc', 0, 5, 0.01, 'arc');
 
-        const shape = folder.addFolder('Flame shape');
+        const shape = folder.addFolder('불꽃 모양');
         R(shape, c, 'flameWidth', 0.05, 3, 0.01, 'tube radius');
         R(shape, c, 'headSize', 1, 5, 0.01, 'fireball size');
         R(shape, c, 'flameHeight', 1, 6, 0.01, 'updraft stretch');
@@ -266,7 +266,7 @@ export class Editor {
         R(shape, c, 'detachment', 0, 1.5, 0.01, 'tail break-up');
         R(shape, c, 'softness', 0.05, 1, 0.01, 'softness');
 
-        const turb = folder.addFolder('Turbulence');
+        const turb = folder.addFolder('난류');
         R(turb, c, 'vortex', 0, 3, 0.01, 'vortex roll-up');
         R(turb, c, 'ringFrequency', 0, 3, 0.01, 'vortices per metre');
         R(turb, c, 'ringSpeed', 0, 6, 0.01, 'vortex speed');
@@ -285,7 +285,7 @@ export class Editor {
         R(turb, c, 'noiseFrequency', 0.1, 6, 0.01, 'noise frequency');
         R(turb, c, 'detailOctaves', 2, 5, 1, 'detail octaves');
 
-        const heat = folder.addFolder('Temperature & radiance');
+        const heat = folder.addFolder('온도 & 발광');
         R(heat, c, 'tempCore', 1500, 6000, 10, 'core temp (K)');
         R(heat, c, 'tempEdge', 800, 3000, 10, 'edge temp (K)');
         R(heat, c, 'emissionCurve', 1, 8, 0.05, 'radiance curve');
@@ -297,21 +297,21 @@ export class Editor {
         R(heat, c, 'scatterFalloff', 0.2, 8, 0.05, 'scatter falloff');
         R(heat, c, 'glow', 0, 10, 0.01, 'glow');
 
-        const render = folder.addFolder('Volume rendering');
+        const render = folder.addFolder('볼륨 렌더링');
         R(render, c, 'volumeDensity', 0, 4, 0.01, 'density');
         R(render, c, 'soot', 0, 6, 0.01, 'soot absorption');
         R(render, c, 'coreClarity', 0.02, 1, 0.01, 'core clarity');
         R(render, c, 'opacity', 0, 2, 0.01, 'opacity');
         R(render, c, 'volumeSteps', 6, 72, 1, 'raymarch steps');
 
-        const colors = folder.addFolder('Fire gradient');
+        const colors = folder.addFolder('불 그라데이션');
         R(colors, c, 'paletteBlend', 0, 1, 0.01, 'palette vs physics');
-        colors.addColor(c, 'colorCore').name('core');
-        colors.addColor(c, 'colorMid').name('mid');
-        colors.addColor(c, 'colorEdge').name('edge');
-        colors.addColor(c, 'colorSmoke').name('smoke');
+        colors.addColor(c, 'colorCore').name('코어');
+        colors.addColor(c, 'colorMid').name('중간');
+        colors.addColor(c, 'colorEdge').name('가장자리');
+        colors.addColor(c, 'colorSmoke').name('연기');
 
-        const embers = folder.addFolder('Embers & smoke');
+        const embers = folder.addFolder('불씨 & 연기');
         R(embers, c, 'emberRate', 0, 400, 1, 'ember rate');
         R(embers, c, 'emberCount', 0, 3, 0.01, 'ember count');
         R(embers, c, 'emberSize', 0.01, 0.6, 0.005, 'ember size');
@@ -324,7 +324,7 @@ export class Editor {
         R(embers, c, 'smokeSize', 0.1, 5, 0.01, 'smoke size');
         R(embers, c, 'smokeLifetime', 0.2, 8, 0.05, 'smoke lifetime');
 
-        const impact = folder.addFolder('Heat & explosion');
+        const impact = folder.addFolder('열 & 폭발');
         R(impact, c, 'heatDistortion', 0, 4, 0.01, 'heat distortion');
         R(impact, c, 'distortionRadius', 0.2, 6, 0.05, 'distortion radius');
         R(impact, c, 'explosionSize', 0.2, 10, 0.05, 'explosion size');
@@ -334,14 +334,14 @@ export class Editor {
       },
 
       water: () => {
-        const flight = folder.addFolder('Flight');
+        const flight = folder.addFolder('비행');
         R(flight, c, 'height', 0, 4, 0.01, 'cruise height');
         R(flight, c, 'surge', 0, 2, 0.01, 'surge amplitude');
         R(flight, c, 'surgeLength', 0, 6, 0.01, 'surges along body');
         R(flight, c, 'surgeSpeed', 0, 10, 0.01, 'surge speed');
         R(flight, c, 'wakeSag', 0, 3, 0.01, 'wake sag');
 
-        const volume = folder.addFolder('Water body');
+        const volume = folder.addFolder('물 본체');
         R(volume, c, 'radius', 0.05, 3, 0.01, 'tube radius');
         R(volume, c, 'headSize', 1, 5, 0.01, 'crest size');
         R(volume, c, 'crest', 1, 4, 0.01, 'crest stretch');
@@ -357,7 +357,7 @@ export class Editor {
         R(volume, c, 'crestSharpness', 0, 2, 0.01, 'crest creases');
         R(volume, c, 'volumeSteps', 8, 64, 1, 'raymarch steps');
 
-        const surface = folder.addFolder('Surface');
+        const surface = folder.addFolder('표면');
         R(surface, c, 'transparency', 0, 1.5, 0.01, 'transparency');
         R(surface, c, 'depthDensity', 0, 4, 0.01, 'depth density');
         R(surface, c, 'refraction', 0, 4, 0.01, 'refraction strength');
@@ -372,11 +372,11 @@ export class Editor {
         R(surface, c, 'shredDepth', 0.02, 2, 0.01, 'break-up depth');
         R(surface, c, 'glow', 0, 6, 0.01, 'glow');
         R(surface, c, 'opacity', 0, 2, 0.01, 'opacity');
-        surface.addColor(c, 'colorDeep').name('deep');
-        surface.addColor(c, 'colorShallow').name('shallow');
-        surface.addColor(c, 'colorFoam').name('foam');
+        surface.addColor(c, 'colorDeep').name('짙은 색');
+        surface.addColor(c, 'colorShallow').name('얕은 색');
+        surface.addColor(c, 'colorFoam').name('거품');
 
-        const spray = folder.addFolder('Spray, foam & mist');
+        const spray = folder.addFolder('물보라, 거품 & 안개');
         R(spray, c, 'dropletRate', 0, 800, 1, 'droplet count/s');
         R(spray, c, 'dropletSize', 0.005, 0.5, 0.005, 'droplet size');
         R(spray, c, 'dropletSpeed', 0, 10, 0.05, 'droplet speed');
@@ -481,8 +481,8 @@ export class Editor {
         R(spiral, c, 'distortion', 0, 4, 0.01, 'distortion');
         R(spiral, c, 'noiseStrength', 0, 3, 0.01, 'noise strength');
         R(spiral, c, 'noiseFrequency', 0.1, 6, 0.01, 'noise frequency');
-        spiral.addColor(c, 'colorInner').name('inner colour');
-        spiral.addColor(c, 'colorOuter').name('outer colour');
+        spiral.addColor(c, 'colorInner').name('안쪽 색');
+        spiral.addColor(c, 'colorOuter').name('바깥 색');
 
         const debris = folder.addFolder('Leaves & dust');
         R(debris, c, 'leafCount', 0, 200, 1, 'leaf count/s');
@@ -662,8 +662,8 @@ export class Editor {
     R(ball, c, 'fresnel', 0, 5, 0.01, 'fresnel');
     R(ball, c, 'opacity', 0, 2, 0.01, 'opacity');
     R(ball, c, 'glow', 0, 5, 0.01, 'glow');
-    ball.addColor(c, 'colorInner').name('inner colour');
-    ball.addColor(c, 'colorOuter').name('outer colour');
+    ball.addColor(c, 'colorInner').name('안쪽 색');
+    ball.addColor(c, 'colorOuter').name('바깥 색');
 
     const debris = folder.addFolder('Dust & light');
     R(debris, c, 'dustRate', 0, 600, 1, 'dust rate');
