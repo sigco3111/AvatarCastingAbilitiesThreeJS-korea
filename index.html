@@ -25,8 +25,18 @@
       </div>
     </div>
 
-    <!-- Heads-up display (populated by src/ui/HUD.js) -->
-    <div id="hud" class="hud" aria-live="polite"></div>
+    <!-- Heads-up display (정적 스켈레톤 — JS init로 즉시 채워짐) -->
+    <div id="hud" class="hud" aria-live="polite">
+      <div class="hud__panel hud__title">
+        <span>원소 조형 샌드박스</span>
+        <span>경로를 그리고, 마우스를 떼면 시전합니다.</span>
+      </div>
+      <button class="hud__lang-toggle" type="button" aria-label="한/영 토글">
+        <span class="hud__lang-toggle__cur">한국어</span>
+        <span class="hud__lang-toggle__sep">·</span>
+        <span class="hud__lang-toggle__alt">EN</span>
+      </button>
+    </div>
 
     <script type="module" src="./src/main.js"></script>
   </body>
