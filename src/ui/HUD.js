@@ -163,7 +163,7 @@ export class HUD {
   _refresh() {
     // 타이틀 + blurb
     this.appTitle.textContent = t('app.title');
-    this.blurb.textContent = locale() === 'ko' ? t('app.subtitle.ko') : t('app.subtitle');
+    this.blurb.textContent = locale() === 'ko' ? t('app.subtitle') : t('app.subtitle');
 
     // stats 라벨
     for (const [key, label] of [

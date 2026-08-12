@@ -20,7 +20,7 @@ const translations = {
   ko: {
     'app.title': '원소 조형 샌드박스',
     'app.subtitle': 'Draw a path. Release to cast.',
-    'app.subtitle.ko': '경로를 그리고, 마우스를 떼면 시전합니다.',
+    'app.subtitle': '경로를 그리고, 마우스를 떼면 시전합니다.',
     'loader.summoning': '원소들을 소환하는 중…',
     'toggle.label': '한 / EN',
     'toggle.aria': '언어 전환 (한국어 / English)',
@@ -72,7 +72,7 @@ const translations = {
     'preset.delete': '삭제',
     'preset.exportCurrent': '현재 프리셋 내보내기 (JSON)',
     'preset.exportAll': '모든 프리셋 내보내기',
-    'preset.가져오기': 'JSON 가져오기…',
+    'preset.import': 'JSON 가져오기…',
     'preset.reset': '기본값으로 초기화',
     'preset.defaultName': '내 프리셋',
     'toast.saved': '프리셋 저장됨: "{name}"',
@@ -80,7 +80,7 @@ const translations = {
     'toast.duplicated': '복제됨: "{name}"',
     'toast.deleted': '삭제됨: "{name}"',
     'toast.exported': '프리셋 내보내기 완료',
-    'toast.가져오기ed': '프리셋 가져오기 완료',
+    'toast.imported': '프리셋 가져오기 완료',
     'toast.reset': '기본값으로 초기화됨',
 
     // Editor — global + folders
@@ -224,7 +224,7 @@ const translations = {
     'env.fogColour': '안개 색',
     'env.skyTint': '하늘 틴트',
     'env.hemiSky': '하늘 채광',
-    'env.hemi지면': '바닥 반사광',
+    'env.hemiGround': '바닥 반사광',
     'env.background': '배경',
     'env.sunIntensity': '태양 광량',
     'env.ambient': '주변광',
@@ -270,13 +270,13 @@ const translations = {
     'app.loadingReady': '준비 완료',
     'walk.mode': '모드 (M)',
     'toast.paused': '일시정지됨',
-    'app.loading환경': '환경 로딩 중…'
+    'app.loadingEnvironment': '환경 로딩 중…'
   },
 
   en: {
     'app.title': 'Bending Sandbox',
     'app.subtitle': 'Draw a path. Release to cast.',
-    'app.subtitle.ko': '경로를 그리고, 마우스를 떼면 시전합니다.',
+    'app.subtitle': '경로를 그리고, 마우스를 떼면 Cast합니다.',
     'loader.summoning': 'Summoning the elements…',
     'toggle.label': '한 / EN',
     'toggle.aria': 'Toggle language (Korean / English)',
@@ -304,12 +304,12 @@ const translations = {
     'modeKey': 'M',
     'elementsKey': '1 2 3 4',
 
-    'element.fire.label': '불',
-    'element.fire.hint': '불bending',
-    'element.water.label': '물',
-    'element.water.hint': '물bending',
-    'element.earth.label': '흙',
-    'element.earth.hint': '흙bending',
+    'element.fire.label': 'Fire',
+    'element.fire.hint': 'Firebending',
+    'element.water.label': 'Water',
+    'element.water.hint': 'Waterbending',
+    'element.earth.label': 'Earth',
+    'element.earth.hint': 'Earthbending',
     'element.wind.label': 'Air',
     'element.wind.hint': 'Airbending',
 
@@ -323,7 +323,7 @@ const translations = {
     'preset.delete': 'Delete',
     'preset.exportCurrent': 'Export current (JSON)',
     'preset.exportAll': 'Export all presets',
-    'preset.가져오기': 'Import JSON…',
+    'preset.import': 'Import JSON…',
     'preset.reset': 'Reset to defaults',
     'preset.defaultName': 'My preset',
     'toast.saved': 'Saved preset "{name}"',
@@ -331,7 +331,7 @@ const translations = {
     'toast.duplicated': 'Duplicated to "{name}"',
     'toast.deleted': 'Deleted "{name}"',
     'toast.exported': 'Presets exported',
-    'toast.가져오기ed': 'Presets 가져오기ed',
+    'toast.imported': 'Presets 가져오기ed',
     'toast.reset': 'Reset to defaults',
 
     'folder.global': 'Global',
@@ -344,10 +344,10 @@ const translations = {
     'folder.turbulence': 'Turbulence',
     'folder.temperature': 'Temperature & radiance',
     'folder.volume': 'Volume rendering',
-    'folder.fireGradient': '불 gradient',
+    'folder.fireGradient': 'Fire gradient',
     'folder.embers': 'Embers & smoke',
     'folder.heat': 'Heat & explosion',
-    'folder.waterBody': '물 body',
+    'folder.waterBody': 'Water body',
     'folder.surface': 'Surface',
     'folder.spray': 'Spray, foam & mist',
 
@@ -420,7 +420,7 @@ const translations = {
     'water.foamSpread': 'foam spread',
     'water.foamLingering': 'foam lifetime',
 
-    'folder.environment': '환경',
+    'folder.environment': 'Environment',
     'folder.post': 'Post-processing',
     'folder.camera': 'Camera',
     'folder.character': 'Character',
@@ -456,7 +456,7 @@ const translations = {
     'env.fogColour': 'fog colour',
     'env.skyTint': 'sky tint',
     'env.hemiSky': 'hemi sky',
-    'env.hemi지면': 'hemi bounce',
+    'env.hemiGround': 'hemi bounce',
     'env.background': 'backdrop',
     'env.sunIntensity': 'sun intensity',
     'env.ambient': 'ambient',
@@ -471,22 +471,22 @@ const translations = {
 
     // Walk subsections (English)
     'walk.leap': 'Leap',
-    'earth.ground': '지면 damage',
+    'earth.ground': 'Ground damage',
     'walk.ball': 'Air ball',
 
     'element.commonLight': 'Dynamic light',
 
-    'app.loadingCharacter': '캐릭터 로딩 중…',
-    'toast.poseSitting': '가부좌 결로',
+    'app.loadingCharacter': 'Loading character…',
+    'toast.poseSitting': 'Meditation pose',
     'wind.debris': 'Leaves & dust',
-    'toast.effectsCleared': '이펙트가 모두 지워졌습니다',
+    'toast.effectsCleared': 'Effects cleared',
     'walk.ride': 'Ride',
-    'toast.pathTooShort': '경로가 너무 짧아 탑승할 수 없습니다',
+    'toast.pathTooShort': 'Path too short to ride',
     'walk.debris': 'Dust & light',
-    'toast.poseStanding': '서 있는 자세',
+    'toast.poseStanding': 'Standing idle',
 
-    'toast.resumed': '재개됨',
-    'app.loadingShaders': '셰이더 컴파일 중…',
+    'toast.resumed': 'Resumed',
+    'app.loadingShaders': 'Compiling shaders…',
 
     'env.backdrop': 'Backdrop, fog & dust',
     'env.floor': 'Stage floor',
@@ -500,12 +500,12 @@ const translations = {
 
     'env.rim': 'Rim light',
     'wind.spiral': 'Spiral',
-    'app.loadingReady': '준비 완료',
+    'app.loadingReady': 'Ready',
 
     'walk.mode': 'mode (M)',
-    'toast.paused': '일시정지됨',
+    'toast.paused': 'Paused',
 
-    'app.loading환경': '환경 로딩 중…'
+    'app.loadingEnvironment': 'Loading environment…'
   }
 };
 
