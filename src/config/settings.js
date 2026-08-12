@@ -91,7 +91,7 @@ export const settings = {
   /* ------------------------------------------------------------------ */
   character: {
     pose: 'idle', // 'idle' (the FBX clip) or 'sitting' (animation/SittingPose.js)
-    blend시간: 0.9, // seconds to cross-fade between the two
+    blendTime: 0.9, // seconds to cross-fade between the two
     breathing: 1.0, // breath amplitude while seated (0 = perfectly still)
     breathRate: 0.2, // breaths per second
     legSpread: 1.0, // widens or narrows the crossed legs
@@ -117,7 +117,7 @@ export const settings = {
     speed: 5.0, // metres/second along the drawn path
     accel: 0.45, // seconds spent easing up to speed after landing
     brake: 0.6, // seconds of gliding to a stop at the far end
-    dismount시간: 0.55, // seconds to step off the ball
+    dismountTime: 0.55, // seconds to step off the ball
     returnHome: false, // leap back to where he started once the path is ridden
 
     /* --- how he rides --- */
@@ -192,7 +192,7 @@ export const settings = {
     ambientColor: '#8ea8d8',
     hemiIntensity: 0.34,
     hemiSkyColor: '#bdd7ff',
-    hemi지면Color: '#3a4552',
+    hemiGroundColor: '#3a4552',
     rimIntensity: 0.9,
     rimColor: '#9ec2ff',
     rimAzimuth: 5.45, // radians
@@ -442,7 +442,7 @@ export const settings = {
     crustDensity: 1.12, // plates per square metre multiplier
     plateSize: 1.38, // metres across, before per-plate variation
     plateThickness: 0.49,
-    paint시간: 0.03, // seconds a single plate takes to surface
+    paintTime: 0.03, // seconds a single plate takes to surface
     // Fracturing — a crack wave trailing the head by `crackDelay`
     crackDelay: 0.84,
     crackSharpness: 0.61, // seconds the fracture snap takes
@@ -482,7 +482,7 @@ export const settings = {
     // Impact — the tower that climbs out of the ground
     towerHeight: 6.2,
     towerWidth: 0.73,
-    towerRise시간: 1.21,
+    towerRiseTime: 1.21,
     towerHold: 2.4, // seconds standing before it sinks back
     towerRocks: 16,
     towerRockRadius: 2.0,

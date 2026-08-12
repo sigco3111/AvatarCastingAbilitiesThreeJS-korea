@@ -365,7 +365,7 @@ export class ParticleSystem {
 /* ---------------------------------------------------------------------- */
 
 const PARTICLE_VERTEX = /* glsl */ `
-  uniform float u시간;
+  uniform float uTime;
   uniform vec3  uGravity;
   uniform float uDrag;
   uniform float uTurbulence;
@@ -405,7 +405,7 @@ const PARTICLE_VERTEX = /* glsl */ `
     vTint = aColor;
 
     float life = aLife * uLifeScale;
-    float age = u시간 - aSpawn;
+    float age = uTime - aSpawn;
     float t = age / max(life, 1e-4);
     vT = t;
 
@@ -438,7 +438,7 @@ const PARTICLE_VERTEX = /* glsl */ `
     // Turbulence: a cheap deterministic wobble, optionally upgraded to real
     // curl noise for the heavier smoke/flame systems.
     #ifdef USE_CURL
-      pos += curlNoise(aStart * uTurbFrequency + vec3(0.0, u시간 * uTurbSpeed, 0.0) + aSeed * 4.0)
+      pos += curlNoise(aStart * uTurbFrequency + vec3(0.0, uTime * uTurbSpeed, 0.0) + aSeed * 4.0)
              * uTurbulence * age;
     #else
       vec3 wobble = vec3(
@@ -477,7 +477,7 @@ const PARTICLE_VERTEX = /* glsl */ `
 `;
 
 const PARTICLE_FRAGMENT = /* glsl */ `
-  uniform float u시간;
+  uniform float uTime;
   uniform float uOpacity;
   uniform float uGlow;
   uniform float uFadeIn;
@@ -513,7 +513,7 @@ const PARTICLE_FRAGMENT = /* glsl */ `
       return smoothstep(1.0, 0.0, d);
 
     #elif SHAPE == 1                     // SMOKE
-      float n = fbm3(vec3(c * 1.6, vSeed * 21.0 + u시간 * 0.25));
+      float n = fbm3(vec3(c * 1.6, vSeed * 21.0 + uTime * 0.25));
       return smoothstep(1.0, 0.05, d + n * 0.42) * 0.9;
 
     #elif SHAPE == 2                     // STREAK

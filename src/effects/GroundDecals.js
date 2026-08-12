@@ -31,7 +31,7 @@ const DECAL_VERTEX = /* glsl */ `
 `;
 
 const DECAL_FRAGMENT = /* glsl */ `
-  uniform float u시간;
+  uniform float uTime;
   uniform float uAge;        // 0..1 normalised lifetime
   uniform float uSeed;
   uniform float uIntensity;
@@ -56,7 +56,7 @@ const DECAL_FRAGMENT = /* glsl */ `
     #if DECAL == 0                                   /* SCORCH */
       float n = fbm3(vec3(c * 2.4, uSeed * 13.0));
       float burn = smoothstep(1.0, 0.15, d + n * 0.45);
-      float embers = pow(max(0.0, snoise(vec3(c * 6.0, uSeed * 9.0 + u시간 * 0.35))), 4.0);
+      float embers = pow(max(0.0, snoise(vec3(c * 6.0, uSeed * 9.0 + uTime * 0.35))), 4.0);
       alpha = burn * (0.85 * fadeOut);
       color = mix(uColorA, uColorB, embers * (1.0 - uAge));
       color += embers * uColorB * 2.5 * (1.0 - smoothstep(0.0, 0.6, uAge));
@@ -65,7 +65,7 @@ const DECAL_FRAGMENT = /* glsl */ `
       float radius = mix(0.05, 1.0, sqrt(uAge));
       float ring = smoothstep(uWidth, 0.0, abs(d - radius));
       float inner = smoothstep(radius, radius - 0.35, d) * 0.22;
-      float wobble = 0.75 + 0.25 * snoise(vec3(c * 5.0, uSeed * 4.0 + u시간));
+      float wobble = 0.75 + 0.25 * snoise(vec3(c * 5.0, uSeed * 4.0 + uTime));
       alpha = (ring * wobble + inner) * fadeOut;
       color = mix(uColorA, uColorB, ring);
 
@@ -88,7 +88,7 @@ const DECAL_FRAGMENT = /* glsl */ `
 
     #elif DECAL == 4                                 /* DUSTRING */
       float radius = mix(0.1, 1.0, pow(uAge, 0.4));
-      float n = fbm3(vec3(c * 3.1, uSeed * 7.0 + u시간 * 0.2));
+      float n = fbm3(vec3(c * 3.1, uSeed * 7.0 + uTime * 0.2));
       float puff = smoothstep(radius, radius * 0.35, d) * (0.6 + n * 0.5);
       alpha = puff * (1.0 - uAge) * 0.7;
       color = mix(uColorA, uColorB, n * 0.5 + 0.5);
@@ -98,7 +98,7 @@ const DECAL_FRAGMENT = /* glsl */ `
       // the middle and dries back into a ring, over wet stone that darkens and
       // slowly evaporates.
       float front = mix(0.12, 1.0, pow(uAge, 0.42));
-      float n = fbm3(vec3(c * 2.6, uSeed * 17.0 + u시간 * 0.12));
+      float n = fbm3(vec3(c * 2.6, uSeed * 17.0 + uTime * 0.12));
       // Water runs outward in fingers, so the front is never a clean circle.
       float ang = atan(c.y, c.x);
       float fingers = 0.68 + 0.32 * snoise(vec3(cos(ang), sin(ang), uSeed * 3.0) * 3.5);

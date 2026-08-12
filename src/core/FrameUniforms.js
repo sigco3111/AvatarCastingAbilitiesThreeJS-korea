@@ -9,7 +9,7 @@ import { Vector2 } from 'three';
  * assignments instead of a traversal.
  */
 export const frame = {
-  u시간: { value: 0 },
+  uTime: { value: 0 },
   uDelta: { value: 0 },
   uResolution: { value: new Vector2(1, 1) },
   /** Packed-RGBA depth of the opaque scene — drives soft particles. */
@@ -26,7 +26,7 @@ export const frame = {
 /** Convenience: the uniform block every VFX material wants. */
 export function sharedUniforms(extra = {}) {
   return {
-    u시간: frame.u시간,
+    uTime: frame.u시간,
     uResolution: frame.uResolution,
     uSceneDepth: frame.uSceneDepth,
     uCameraNear: frame.uCameraNear,

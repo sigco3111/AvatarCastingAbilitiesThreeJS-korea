@@ -34,7 +34,7 @@ export class Ground {
       uFloorTint: { value: getColor(settings.environment.floorTint).clone() },
       uSheen: { value: settings.environment.floorSheen },
       uPool: { value: settings.environment.floorPool },
-      u시간: { value: 0 }
+      uTime: { value: 0 }
     };
 
     environment.registerShadowCasterWithPatch(this.material, (shader) => {
@@ -60,7 +60,7 @@ export class Ground {
            uniform vec3 uFloorTint;
            uniform float uSheen;
            uniform float uPool;
-           uniform float u시간;
+           uniform float uTime;
            ${noiseGLSL}`
         )
         .replace(

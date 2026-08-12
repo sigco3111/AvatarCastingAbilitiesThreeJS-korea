@@ -22,7 +22,7 @@ export const BurstMode = Object.freeze({
 });
 
 const BURST_VERTEX = /* glsl */ `
-  uniform float u시간;
+  uniform float uTime;
   uniform float uAge;
   uniform float uDisplace;
   uniform float uSeed;
@@ -41,7 +41,7 @@ const BURST_VERTEX = /* glsl */ `
 
     // Billowing surface: several octaves of noise pushed along the normal,
     // scrolling outward as the burst expands.
-    vec3 np = normal * (1.6 + uAge * 1.4) + vec3(uSeed * 13.0) - vec3(0.0, u시간 * 0.6, 0.0);
+    vec3 np = normal * (1.6 + uAge * 1.4) + vec3(uSeed * 13.0) - vec3(0.0, uTime * 0.6, 0.0);
     float n = fbm4(np) * 0.6 + ridged(np * 1.3, 4) * 0.4;
     vDisp = n;
 
@@ -59,7 +59,7 @@ const BURST_VERTEX = /* glsl */ `
 `;
 
 const BURST_FRAGMENT = /* glsl */ `
-  uniform float u시간;
+  uniform float uTime;
   uniform float uAge;
   uniform float uSeed;
   uniform float uIntensity;

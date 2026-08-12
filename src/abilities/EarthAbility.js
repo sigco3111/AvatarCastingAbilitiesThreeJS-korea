@@ -314,7 +314,7 @@ export class EarthAbility extends Ability {
   }
 
   /** Absolute age at which this plate lets go. */
-  _plateCrack시간(record, c) {
+  _plateCracktime(record, c) {
     let delay;
     if (record.apron) {
       // The apron breaks outward from the tower, not on the crust's schedule.
@@ -403,12 +403,12 @@ export class EarthAbility extends Ability {
     const c = settings.earth;
     const g = settings.global;
     const now = this.age;
-    const paint시간 = Math.max(0.03, c.paint시간);
-    const snap시간 = Math.max(0.05, c.crackSharpness);
+    const paintTime = Math.max(0.03, c.paint시간);
+    const snaptime = Math.max(0.05, c.crackSharpness);
 
     for (let i = 0; i < MAX_PLATES; i++) {
       const record = this.plateRecords[i];
-      const paint = record.active ? saturate((now - record.paintAge) / paint시간) : 0;
+      const paint = record.active ? saturate((now - record.paintAge) / paintTime) : 0;
 
       if (paint <= 0) {
         _dummy.position.set(0, -999, 0);
@@ -437,8 +437,8 @@ export class EarthAbility extends Ability {
           this._fractureFx(record, radius, tilt);
         }
         const since = now - crackAt;
-        const snap = Easing.outBack(saturate(since / snap시간));
-        const settle = Easing.inOutCubic(saturate((since - snap시간) / 1.1));
+        const snap = Easing.outBack(saturate(since / snaptime));
+        const settle = Easing.inOutCubic(saturate((since - snaptime) / 1.1));
         bite = snap;
         lift = throwHeight * (snap - settle * 0.45);
       } else {

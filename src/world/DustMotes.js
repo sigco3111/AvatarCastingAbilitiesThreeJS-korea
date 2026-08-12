@@ -43,14 +43,14 @@ export class DustMotes {
       blending: AdditiveBlending,
       fog: false,
       uniforms: {
-        u시간: { value: 0 },
+        uTime: { value: 0 },
         uAmount: { value: 1 },
         uSize: { value: 20 },
         uPixelRatio: { value: 1 },
         uVolume: { value: VOLUME.clone() }
       },
       vertexShader: /* glsl */ `
-        uniform float u시간;
+        uniform float uTime;
         uniform float uSize;
         uniform float uPixelRatio;
         uniform vec3 uVolume;
@@ -64,8 +64,8 @@ export class DustMotes {
           vec3 p = position;
 
           // Slow buoyant drift with a curl-noise wobble.
-          float t = u시간 * (0.05 + aSeed * 0.06);
-          p.y += mod(u시간 * (0.12 + aSeed * 0.25), uVolume.y);
+          float t = uTime * (0.05 + aSeed * 0.06);
+          p.y += mod(uTime * (0.12 + aSeed * 0.25), uVolume.y);
           p.y = mod(p.y, uVolume.y);
           p += curlNoise(p * 0.06 + vec3(0.0, t, 0.0)) * 1.35;
 
@@ -73,7 +73,7 @@ export class DustMotes {
           float dist = -mv.z;
 
           // Twinkle + distance falloff.
-          float twinkle = 0.55 + 0.45 * sin(u시간 * (1.1 + aSeed * 2.6) + aSeed * 40.0);
+          float twinkle = 0.55 + 0.45 * sin(uTime * (1.1 + aSeed * 2.6) + aSeed * 40.0);
           vAlpha = twinkle * smoothstep(90.0, 12.0, dist) * smoothstep(0.5, 4.0, dist);
 
           gl_Position = projectionMatrix * mv;

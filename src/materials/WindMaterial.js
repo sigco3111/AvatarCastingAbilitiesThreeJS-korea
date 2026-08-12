@@ -50,7 +50,7 @@ export class WindRibbonMaterial extends ShaderMaterial {
         uTailFade: { value: 0.16 }
       }),
       vertexShader: /* glsl */ `
-        uniform float u시간;
+        uniform float uTime;
         uniform float uSwirlSpeed;
 
         attribute vec3  aNormal;
@@ -84,7 +84,7 @@ export class WindRibbonMaterial extends ShaderMaterial {
         }
       `,
       fragmentShader: /* glsl */ `
-        uniform float u시간;
+        uniform float uTime;
         uniform vec3  uColorInner;
         uniform vec3  uColorOuter;
         uniform float uOpacity;
@@ -166,7 +166,7 @@ export class WindRibbonMaterial extends ShaderMaterial {
           // over their length.
           float amp = mix(0.22, 1.0, r2)
                     * smoothstep(-0.45, 0.35,
-                        fbm3(vec3(t * 1.5 - flow * 0.25, id * 2.7 + seed, u시간 * 0.12)));
+                        fbm3(vec3(t * 1.5 - flow * 0.25, id * 2.7 + seed, uTime * 0.12)));
 
           return vec2(core, body) * amp;
         }
@@ -178,13 +178,13 @@ export class WindRibbonMaterial extends ShaderMaterial {
 
           float fres = fresnelTerm(vViewDir, vNormalW, 2.2, 1.0) * uFresnel;
 
-          float flow = u시간 * uSwirlSpeed;
+          float flow = uTime * uSwirlSpeed;
           float freq = max(uNoiseFrequency, 0.05);
 
           // ---- comb frame -------------------------------------------------
           // Both fields depend on t alone, so every hairline in a cross-section
           // is displaced identically and the strands stay long and parallel.
-          vec3 sp = vec3(t * freq * 2.4 - flow * 0.22, vSeed * 29.0, u시간 * 0.15);
+          vec3 sp = vec3(t * freq * 2.4 - flow * 0.22, vSeed * 29.0, uTime * 0.15);
           float sway  = fbm3(sp) * uTurbulence;
           // Bunching: below 1 the comb squeezes into a tight tress, above 1 it
           // opens out into a fan.
@@ -229,7 +229,7 @@ export class WindRibbonMaterial extends ShaderMaterial {
           // Milky vapour filling the gaps. It thins out towards the head, where
           // several ribbons overlap and would otherwise stack into a solid white
           // blob under additive blending.
-          float hz = fbm3(vec3(t * freq * 1.9 - flow * 0.4, across * 1.2, u시간 * 0.3));
+          float hz = fbm3(vec3(t * freq * 1.9 - flow * 0.4, across * 1.2, uTime * 0.3));
           float haze = smoothstep(1.0, 0.05, radial + hz * uNoiseStrength * 0.35)
                      * uHaze * mix(1.0, 0.4, smoothstep(0.55, 1.0, t));
 
@@ -331,7 +331,7 @@ export class TornadoMaterial extends ShaderMaterial {
         uShellScale: { value: 1 }
       }),
       vertexShader: /* glsl */ `
-        uniform float u시간;
+        uniform float uTime;
         uniform float uAge;
         uniform float uNeck;
         uniform float uFlare;
@@ -361,10 +361,10 @@ export class TornadoMaterial extends ShaderMaterial {
          */
         vec2 coreOffset(float h) {
           float w = pow(clamp(h, 0.0, 1.0), 1.5);
-          vec2 slow = vec2(snoise(vec3(h * 1.05, u시간 * 0.33, 0.0)),
-                           snoise(vec3(h * 1.05, u시간 * 0.29, 17.3)));
-          vec2 fast = vec2(snoise(vec3(h * 3.1, u시간 * 0.95, 5.7)),
-                           snoise(vec3(h * 3.1, u시간 * 0.88, 41.2)));
+          vec2 slow = vec2(snoise(vec3(h * 1.05, uTime * 0.33, 0.0)),
+                           snoise(vec3(h * 1.05, uTime * 0.29, 17.3)));
+          vec2 fast = vec2(snoise(vec3(h * 3.1, uTime * 0.95, 5.7)),
+                           snoise(vec3(h * 3.1, uTime * 0.88, 41.2)));
           return (slow * 0.78 + fast * 0.3) * uLean * w * (1.0 + ropeT() * 2.0);
         }
 
@@ -382,12 +382,12 @@ export class TornadoMaterial extends ShaderMaterial {
 
           // Bulges and constrictions riding up the column. Constant around the
           // circumference — this is the column breathing, not a lumpy tube.
-          r *= 1.0 + uRough * fbm3(vec3(hc * 2.6 - u시간 * 0.9, uSeed * 7.0, u시간 * 0.2));
+          r *= 1.0 + uRough * fbm3(vec3(hc * 2.6 - uTime * 0.9, uSeed * 7.0, uTime * 0.2));
 
           // A little out of round, so the silhouette never reads as a lathe.
           // Sampled on the circle itself, so it wraps at the seam.
           r *= 1.0 + 0.07 * snoise(vec3(cos(ang) * 1.3, sin(ang) * 1.3,
-                                        hc * 2.2 - u시간 * 0.7 + uSeed));
+                                        hc * 2.2 - uTime * 0.7 + uSeed));
 
           // Roping out: the whole column narrows as it dies.
           r *= mix(1.0, 0.34, ropeT());
@@ -426,7 +426,7 @@ export class TornadoMaterial extends ShaderMaterial {
         }
       `,
       fragmentShader: /* glsl */ `
-        uniform float u시간;
+        uniform float uTime;
         uniform float uAge;
         uniform vec3  uColorInner;
         uniform vec3  uColorOuter;
@@ -459,14 +459,14 @@ export class TornadoMaterial extends ShaderMaterial {
           // several times faster than the wide top. Shearing the dust that way
           // is most of what separates a vortex from a spinning cylinder.
           float rate = uSpin * mix(2.2, 0.55, smoothstep(0.0, 0.9, h));
-          float lift = u시간 * uSpin * 0.5;
+          float lift = uTime * uSpin * 0.5;
 
           // Two dust sheets at different depths in the wall, each sampled on a
           // circle so it wraps at the seam, each sheared into its own helix.
           // The two helix pitches are kept close. Pull them apart and the
           // streaks cross into a woven lattice instead of running together.
-          float w1 = u시간 * rate + h * 5.0 + uSeed;
-          float w2 = u시간 * rate * 0.72 + h * 6.4 + uSeed * 2.7;
+          float w1 = uTime * rate + h * 5.0 + uSeed;
+          float w2 = uTime * rate * 0.72 + h * 6.4 + uSeed * 2.7;
           vec2 c1 = vec2(cos(ang - w1), sin(ang - w1));
           vec2 c2 = vec2(cos(ang - w2), sin(ang - w2));
 

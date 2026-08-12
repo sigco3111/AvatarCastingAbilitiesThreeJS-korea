@@ -55,7 +55,7 @@ export class DistortionMaterial extends ShaderMaterial {
         }
       `,
       fragmentShader: /* glsl */ `
-        uniform float u시간;
+        uniform float uTime;
         uniform float uStrength;
         uniform float uFrequency;
         uniform float uSpeed;
@@ -70,7 +70,7 @@ export class DistortionMaterial extends ShaderMaterial {
         ${noiseGLSL}
 
         void main() {
-          vec3 np = vec3(v월드.xz * uFrequency, v월드.y * uFrequency * 0.6 - u시간 * uSpeed * uRise + uSeed);
+          vec3 np = vec3(v월드.xz * uFrequency, v월드.y * uFrequency * 0.6 - uTime * uSpeed * uRise + uSeed);
           float nx = snoise(np);
           float ny = snoise(np + vec3(19.3, 7.7, 31.1));
 

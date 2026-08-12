@@ -10,7 +10,7 @@ export const GradeShader = {
 
   uniforms: {
     tDiffuse: { value: null },
-    u시간: { value: 0 },
+    uTime: { value: 0 },
     uAberration: { value: 0.35 },
     uVignette: { value: 0.4 },
     uContrast: { value: 1.05 },
@@ -33,7 +33,7 @@ export const GradeShader = {
 
   fragmentShader: /* glsl */ `
     uniform sampler2D tDiffuse;
-    uniform float u시간;
+    uniform float uTime;
     uniform float uAberration;
     uniform float uVignette;
     uniform float uContrast;
@@ -92,7 +92,7 @@ export const GradeShader = {
 
       // ---- grain ---------------------------------------------------------
       if (uGrain > 0.0005) {
-        float grain = hash12(uv * vec2(1920.0, 1080.0) + fract(u시간) * 137.0) - 0.5;
+        float grain = hash12(uv * vec2(1920.0, 1080.0) + fract(uTime) * 137.0) - 0.5;
         color += grain * uGrain;
       }
 

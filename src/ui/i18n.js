@@ -20,7 +20,6 @@ const translations = {
   ko: {
     'app.title': '원소 조형 샌드박스',
     'app.subtitle': 'Draw a path. Release to cast.',
-    'app.subtitle': '경로를 그리고, 마우스를 떼면 시전합니다.',
     'loader.summoning': '원소들을 소환하는 중…',
     'toggle.label': '한 / EN',
     'toggle.aria': '언어 전환 (한국어 / English)',
@@ -270,13 +269,26 @@ const translations = {
     'app.loadingReady': '준비 완료',
     'walk.mode': '모드 (M)',
     'toast.paused': '일시정지됨',
-    'app.loadingEnvironment': '환경 로딩 중…'
-  },
+    'app.loadingEnvironment': '환경 로딩 중…',
+  
+    'save': 'Save',
+    'load': 'Load',
+    'duplicate': 'Duplicate',
+    'remove': 'Delete',
+    'post.enabled': 'enabled',
+    'character.pose': 'pose (T)',
+    'character.handsOnKnees': 'hands on knees',
+    'common.lightColour': 'light colour',
+    'earth.colorRock': 'rock',
+    'earth.colorRockDark': 'rock dark',
+    'earth.colorMoss': 'moss',
+    'walk.returnHome': 'leap home after',
+    'camera.clear': 'Clear effects (C)',
+},
 
   en: {
     'app.title': 'Bending Sandbox',
     'app.subtitle': 'Draw a path. Release to cast.',
-    'app.subtitle': '경로를 그리고, 마우스를 떼면 Cast합니다.',
     'loader.summoning': 'Summoning the elements…',
     'toggle.label': '한 / EN',
     'toggle.aria': 'Toggle language (Korean / English)',
@@ -505,13 +517,26 @@ const translations = {
     'walk.mode': 'mode (M)',
     'toast.paused': 'Paused',
 
-    'app.loadingEnvironment': 'Loading environment…'
-  }
+    'app.loadingEnvironment': 'Loading environment…',
+    'save': 'Save',
+    'load': 'Load',
+    'duplicate': 'Duplicate',
+    'remove': 'Delete',
+    'post.enabled': 'enabled',
+    'character.pose': 'pose (T)',
+    'character.handsOnKnees': 'hands on knees',
+    'common.lightColour': 'light colour',
+    'earth.colorRock': 'rock',
+    'earth.colorRockDark': 'rock dark',
+    'earth.colorMoss': 'moss',
+    'walk.returnHome': 'leap home after',
+    'camera.clear': 'Clear effects (C)',
+}
 };
 
 /** 현재 로케일 (반응형). 항상 'ko' 또는 'en'. */
 let currentLocale = readStoredLocale() ?? DEFAULT_LOCALE;
-const 구독rs = new Set();
+const subscribers = new Set();
 
 function readStoredLocale() {
   try {
@@ -547,8 +572,8 @@ export function locale() {
 
 /** 변경 구독. 콜백은 언어 변경 직후 호출됨. */
 export function onChange(cb) {
-  구독rs.add(cb);
-  return () => 구독rs.delete(cb);
+  subscribers.add(cb);
+  return () => subscribers.delete(cb);
 }
 
 /** 로케일 토글 ('ko' ↔ 'en'). UI 라벨은 즉시 다시 그려지고 콜백 모두 호출. */
@@ -560,8 +585,8 @@ export function applyLocale(next) {
   try {
     document.documentElement.lang = next;
   } catch (_) { /* SSR / 비-DOM 환경 */ }
-  for (const cb of 구독rs) {
-    try { cb(next); } catch (err) { console.warn('[i18n] 구독r threw', err); }
+  for (const cb of subscribers) {
+    try { cb(next); } catch (err) { console.warn('[i18n] Subscribe threw', err); }
   }
 }
 
