@@ -33,6 +33,9 @@ import { t } from '../ui/i18n.js';
 
 import { settings, ELEMENTS, MODES, MODE_META } from '../config/settings.js';
 
+// HDR 환경맵 자산 — 부팅 시 AssetLoader 가 fetch 하는 경로.
+const HDR_URL = './hdri/spruit_sunrise.hdr';
+
 /**
  * Application root: owns every subsystem and the frame loop.
  *

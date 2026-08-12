@@ -188,7 +188,7 @@ export class CharacterController {
 
     next.reset();
     next.enabled = true;
-    next.setEffective시간Scale(1);
+    next.setEffectiveTimeScale(1);
     next.setEffectiveWeight(1);
 
     if (this.current && fadeDuration > 0) {
