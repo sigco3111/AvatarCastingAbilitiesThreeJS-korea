@@ -163,8 +163,8 @@ export class HUD {
   _refresh() {
     // 타이틀 + blurb
     this.appTitle.textContent = t('app.title');
-    // blurb: 한국어일 땐 한국어 sub, 영어일 땐 영문 sub (각각 별도 키)
-    this.blurb.textContent = locale() === 'ko' ? t('app.subtitle.ko') : t('app.subtitle');
+    // blurb는 단일 키. i18n 시스템이 현재 로케일에 따라 ko/en 사전을 자동 선택
+    this.blurb.textContent = t('app.subtitle');
 
     // stats 라벨
     for (const [key, label] of [

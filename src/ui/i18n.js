@@ -19,7 +19,7 @@ const DEFAULT_LOCALE = 'ko';
 const translations = {
   ko: {
     'app.title': '원소 조형 샌드박스',
-    'app.subtitle': 'Draw a path. Release to cast.',
+    'app.subtitle': '경로를 그리고, 마우스를 떼면 시전합니다',
     'loader.summoning': '원소들을 소환하는 중…',
     'toggle.label': '한 / EN',
     'toggle.aria': '언어 전환 (한국어 / English)',
@@ -577,7 +577,8 @@ const translations = {
 
   en: {
     'app.title': 'Bending Sandbox',
-    'app.subtitle': 'Draw a path. Release to cast.',
+        'app.subtitle.ko': '경로를 그리고, 마우스를 떼면 시전합니다',
+        'app.subtitle': 'Draw a path. Release to cast.',
     'loader.summoning': 'Summoning the elements…',
     'toggle.label': '한 / EN',
     'toggle.aria': 'Toggle language (Korean / English)',
