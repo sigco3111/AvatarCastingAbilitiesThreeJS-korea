@@ -4,7 +4,7 @@
 > Three.js + Vite + 자체 GLSL로 구현된 실시간 VFX 데모 플랫폼.  
 > 바닥에 마우스로 경로를 그리면 4원소가 그 경로를 따라 쏘아져 끝에서 폭발합니다.
 
-[![라이브 데모](https://img.shields.io/badge/🌐_Live_Demo-casting--abilities.vercel.app-6366f1?style=for-the-badge)](https://casting-abilities.vercel.app/)
+[![라이브 데모](https://img.shields.io/badge/🌐_Live_Demo-casting--abilities.vercel.app-6366f1?style=for-the-badge)](https://sigco3111.github.io/AvatarCastingAbilitiesThreeJS-korea/)
 [![라이선스: MIT](https://img.shields.io/badge/라이선스-MIT-22c55e?style=for-the-badge)](LICENSE)
 [![Three.js](https://img.shields.io/badge/Three.js-r185-000000?style=for-the-badge)](https://threejs.org/)
 [![Vite](https://img.shields.io/badge/Vite-8.x-646cff?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
@@ -31,7 +31,7 @@
 
 | URL | 용도 |
 |---|---|
-| **[casting-abilities.vercel.app](https://casting-abilities.vercel.app/)** | 🎯 사용자용 — anon 200, SSO 없이 바로 접근 |
+| **[sigco3111.github.io/AvatarCastingAbilitiesThreeJS-korea](https://sigco3111.github.io/AvatarCastingAbilitiesThreeJS-korea/)** | 🎯 사용자용 — anon 200, SSO 없이 바로 접근 |
 | `casting-abilities-gx32gkvax-sigco3111s-projects.vercel.app` | ⚙️ team-scope production URL — 내부 디버깅용 |
 
 > ⚠️ **macOS Safari 권장**: WebGL2 + 이미지 기반 조명 + FBX 캐릭터 + HDR 환경 조명을 모두 사용하므로, GPU 가속이 활성화된 데스크탑 브라우저에서 가장 잘 작동합니다.
@@ -370,7 +370,7 @@ src/
 
 | 위치 | URL |
 |---|---|
-| 라이브 데모 | `https://casting-abilities.vercel.app/` |
+| 라이브 데모 | `https://sigco3111.github.io/AvatarCastingAbilitiesThreeJS-korea/` |
 | FBX 자산 | `/models/Standing%20Idle.fbx` |
 | HDR 자산 | `/hdri/spruit_sunrise.hdr` |
 
