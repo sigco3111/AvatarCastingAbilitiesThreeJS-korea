@@ -74,7 +74,7 @@ export class HUD {
     this.onSelect = null;
     this.onMode = null;
     this.onLocaleToggle = null;
-    this._toast시간r = 0;
+    this._toastTimer = 0;
 
     this._renderShell();
     this._installClickDelegates();
@@ -272,8 +272,8 @@ export class HUD {
     if (!this.toast) return;
     this.toast.textContent = message;
     this.toast.classList.add('hud__toast--visible');
-    clearTimeout(this._toast시간r);
-    this._toast시간r = setTimeout(() => {
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => {
       this.toast.classList.remove('hud__toast--visible');
     }, 1600);
   }

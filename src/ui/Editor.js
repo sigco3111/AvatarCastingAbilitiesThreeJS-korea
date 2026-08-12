@@ -33,7 +33,7 @@ export class Editor {
     this._buildGlobal();
     this._buildTrail();
     for (const element of ELEMENTS) this._buildElement(element);
-    this._build환경();
+    this._buildEnvironment();
     this._buildPost();
     this._buildCamera();
     this._buildCharacter();
@@ -445,7 +445,7 @@ export class Editor {
         R(crust, c, 'crustDensity', 0.2, 3, 0.01, 'earth.crustDensity');
         R(crust, c, 'plateSize', 0.2, 3, 0.01, 'earth.plateSize');
         R(crust, c, 'plateThickness', 0.02, 1, 0.01, 'earth.plateThickness');
-        R(crust, c, 'paintTime', 0.03, 1.5, 0.01, 'earth.paint시간');
+        R(crust, c, 'paintTime', 0.03, 1.5, 0.01, 'earth.paintTime');
 
         const fracture = Editor.folder(folder, 'earth.fracture');
         R(fracture, c, 'crackDelay', 0.02, 3, 0.01, 'earth.crackDelay');
@@ -486,7 +486,7 @@ export class Editor {
         const impact = Editor.folder(folder, 'folder.heat');
         R(impact, c, 'towerHeight', 0.5, 20, 0.05, 'earth.towerHeight');
         R(impact, c, 'towerWidth', 0.1, 5, 0.01, 'earth.towerWidth');
-        R(impact, c, 'towerRiseTime', 0.1, 4, 0.01, 'earth.towerRise시간');
+        R(impact, c, 'towerRiseTime', 0.1, 4, 0.01, 'earth.towerRiseTime');
         R(impact, c, 'towerHold', 0, 8, 0.05, 'earth.towerHold');
         R(impact, c, 'towerRocks', 0, 60, 1, 'earth.towerRocks');
         R(impact, c, 'towerRockRadius', 0.2, 8, 0.05, 'earth.towerRockRadius');
@@ -580,7 +580,7 @@ export class Editor {
     R(rim, e, 'rimAzimuth', 0, Math.PI * 2, 0.01, 'env.rimAzimuth');
     R(rim, e, 'rimElevation', 0.05, 1.5, 0.01, 'env.rimElevation');
     Editor.color(rim, e, 'hemiSkyColor', 'env.hemiSky');
-    Editor.color(rim, e, 'hemiGroundColor', 'env.hemi지면');
+    Editor.color(rim, e, 'hemiGroundColor', 'env.hemiGround');
 
     const fog = Editor.folder(folder, 'env.backdrop');
     Editor.color(fog, e, 'backgroundColor', 'env.background');
@@ -645,7 +645,7 @@ export class Editor {
 
     // 컨트롤러가 `pose`를 매 프레임 폴링하므로 드롭다운은 핸들러 불요.
     Editor.label(folder, c, 'pose', 'character.pose');
-    R(folder, c, 'blendTime', 0.05, 3, 0.01, 'character.blend시간');
+    R(folder, c, 'blendTime', 0.05, 3, 0.01, 'character.blendTime');
     R(folder, settings.global, 'animationSpeed', 0.1, 3, 0.01, 'character.idleSpeed');
 
     // 아래 항목들은 seated pose 가 바뀔 때마다 재구성된다.
@@ -686,7 +686,7 @@ export class Editor {
     R(ride, c, 'speed', 0.5, 16, 0.1, 'walk.speed');
     R(ride, c, 'accel', 0.01, 3, 0.01, 'walk.accel');
     R(ride, c, 'brake', 0.05, 3, 0.01, 'walk.brake');
-    R(ride, c, 'dismountTime', 0.1, 2, 0.01, 'walk.dismount시간');
+    R(ride, c, 'dismountTime', 0.1, 2, 0.01, 'walk.dismountTime');
     R(ride, c, 'hover', 0, 0.5, 0.005, 'walk.hover');
     R(ride, c, 'seatSink', 0, 1, 0.01, 'walk.seatSink');
     R(ride, c, 'bob', 0, 0.3, 0.005, 'walk.bob');

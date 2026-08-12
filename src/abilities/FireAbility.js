@@ -291,7 +291,7 @@ export class FireAbility extends Ability {
   _emitStream(dt) {
     const c = settings.fire;
     const g = settings.global;
-    const time = frame.u시간.value;
+    const time = frame.uTime.value;
     const countScale = g.particleCount;
     const radius = c.flameWidth;
 
@@ -392,7 +392,7 @@ export class FireAbility extends Ability {
   onImpact() {
     const c = settings.fire;
     const g = settings.global;
-    const time = frame.u시간.value;
+    const time = frame.uTime.value;
     const scale = c.explosionSize * g.explosionIntensity;
 
     const core = getColor(c.colorCore);

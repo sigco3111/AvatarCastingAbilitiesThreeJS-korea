@@ -110,7 +110,7 @@ export class App {
     this.loading = new LoadingScreen();
     this.hud = new HUD(document.getElementById('hud'));
     this.editor = new Editor({
-      onClear: () => this.clear이펙트(),
+      onClear: () => this.clearEffects(),
       onToast: (message) => this.hud.showToast(message)
     });
 
@@ -167,7 +167,7 @@ export class App {
         this.editor.toggle();
         break;
       case 'clear':
-        this.clear이펙트();
+        this.clearEffects();
         this.hud.showToast(t('toast.effectsCleared'));
         break;
       case 'togglePause':
@@ -216,7 +216,7 @@ export class App {
     this.editor.refresh();
   }
 
-  clear이펙트() {
+  clearEffects() {
     this.walk.cancel();
     this.abilities.clear();
     this.particles.reset();
@@ -234,9 +234,9 @@ export class App {
   async load() {
     const assets = new AssetLoader();
 
-    this.loading.setProgress(0.05, t('app.loading환경'));
+    this.loading.setProgress(0.05, t('app.loadingEnvironment'));
     const hdr = await assets.loadHDR(HDR_URL);
-    await this.environment.load환경(hdr);
+    await this.environment.loadEnvironment(hdr);
     frame.uEnvMap.value = this.environment.equirect;
 
     this.loading.setProgress(0.5, t('app.loadingCharacter'));
@@ -276,7 +276,7 @@ export class App {
     this.elapsed += dt;
 
     /* ---- shared uniforms ---- */
-    frame.u시간.value = this.elapsed;
+    frame.uTime.value = this.elapsed;
     frame.uDelta.value = dt;
     frame.uShaderIntensity.value = settings.global.shaderIntensity;
     frame.uGlobalGlow.value = settings.global.glow;

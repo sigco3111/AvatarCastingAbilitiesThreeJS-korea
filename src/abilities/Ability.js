@@ -55,8 +55,8 @@ export class Ability {
     this.distance = 0; // metres travelled along the spline
     this.u = 0; // normalised progress 0..1
     this.age = 0;
-    this.impact시간 = 0;
-    this.fade시간 = 0;
+    this.impactTime = 0;
+    this.fadeTime = 0;
 
     this.position = new Vector3();
     this.previousPosition = new Vector3();
@@ -140,8 +140,8 @@ export class Ability {
     this.distance = 0;
     this.u = 0;
     this.age = 0;
-    this.impact시간 = 0;
-    this.fade시간 = 0;
+    this.impactTime = 0;
+    this.fadeTime = 0;
     this.trailCount = 0;
     this.phase = AbilityPhase.TRAVEL;
 
@@ -277,7 +277,7 @@ export class Ability {
         this._updateLight(dt, 1);
         if (reachedEnd) {
           this.phase = AbilityPhase.IMPACT;
-          this.impact시간 = 0;
+          this.impactTime = 0;
           this.onImpact();
         }
         // A path that outlives its element still has to end eventually.
@@ -289,20 +289,20 @@ export class Ability {
       }
 
       case AbilityPhase.IMPACT: {
-        this.impact시간 += dt;
-        const t = saturate(this.impact시간 / this.impactDuration);
+        this.impactTime += dt;
+        const t = saturate(this.impactTime / this.impactDuration);
         this.onFade(dt, t);
         this._updateLight(dt, 1 - Easing.inQuad(t) * 0.35);
         if (t >= 1) {
           this.phase = AbilityPhase.FADE;
-          this.fade시간 = 0;
+          this.fadeTime = 0;
         }
         break;
       }
 
       case AbilityPhase.FADE: {
-        this.fade시간 += dt;
-        const t = saturate(this.fade시간 / this.fadeDuration);
+        this.fadeTime += dt;
+        const t = saturate(this.fadeTime / this.fadeDuration);
         this.onFade(dt, 1 + t);
         this._updateLight(dt, (1 - t) * 0.4);
         if (t >= 1) this.phase = AbilityPhase.DONE;

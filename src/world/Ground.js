@@ -42,20 +42,20 @@ export class Ground {
       shader.uniforms.uFloorTint = this.uniforms.uFloorTint;
       shader.uniforms.uSheen = this.uniforms.uSheen;
       shader.uniforms.uPool = this.uniforms.uPool;
-      shader.uniforms.u시간 = this.uniforms.u시간;
+      shader.uniforms.uTime = this.uniforms.uTime;
 
       shader.vertexShader = shader.vertexShader
-        .replace('#include <common>', `#include <common>\nvarying vec3 v지면월드;`)
+        .replace('#include <common>', `#include <common>\nvarying vec3 vgroundWorld;`)
         .replace(
           '#include <begin_vertex>',
-          `#include <begin_vertex>\nv지면월드 = (modelMatrix * vec4(transformed, 1.0)).xyz;`
+          `#include <begin_vertex>\nvGroundWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;`
         );
 
       shader.fragmentShader = shader.fragmentShader
         .replace(
           '#include <common>',
           `#include <common>
-           varying vec3 v지면월드;
+           varying vec3 vgroundWorld;
            uniform vec3 uFloorColor;
            uniform vec3 uFloorTint;
            uniform float uSheen;
@@ -67,7 +67,7 @@ export class Ground {
           '#include <map_fragment>',
           `#include <map_fragment>
            {
-             vec3 wp = v지면월드;
+             vec3 wp = vgroundWorld;
 
              // Broad, deliberately smooth variation — dark stone with a warmer
              // wash drifting through it. Anything higher frequency than this
@@ -98,7 +98,7 @@ export class Ground {
            {
              // Break the sheen up: broad patches of smoother stone catch the key
              // light and the elemental glows, the rest stays matte.
-             float polish = smoothstep(0.3, 0.85, fbm3(v지면월드 * 0.06 + 3.0) * 0.5 + 0.5);
+             float polish = smoothstep(0.3, 0.85, fbm3(vgroundWorld * 0.06 + 3.0) * 0.5 + 0.5);
              roughnessFactor *= mix(1.0, 0.45, polish * clamp(uSheen, 0.0, 1.0));
            }`
         );
@@ -118,7 +118,7 @@ export class Ground {
 
   update(elapsed) {
     const env = settings.environment;
-    this.uniforms.u시간.value = elapsed;
+    this.uniforms.uTime.value = elapsed;
     this.uniforms.uFloorColor.value.copy(getColor(env.floorColor));
     this.uniforms.uFloorTint.value.copy(getColor(env.floorTint));
     this.uniforms.uSheen.value = env.floorSheen;

@@ -60,7 +60,7 @@ export class CharacterController {
 
     this.sitting = null;
     this._poseWeight = 0; // 0 = idle clip, 1 = seated
-    this._pose시간 = 0;
+    this._poseTime = 0;
     this._poseBlend = null; // seconds, overrides settings for one transition
   }
 
@@ -90,7 +90,7 @@ export class CharacterController {
     this.albedo = albedo;
 
     fbx.scale.setScalar(FBX_SCALE);
-    fbx.updateMatrix월드(true);
+    fbx.updateMatrixWorld(true);
 
     const box = new Box3().setFromObject(fbx);
     const size = new Vector3();
@@ -99,7 +99,7 @@ export class CharacterController {
 
     // Normalise the rig's height, then drop it onto y = 0 and centre it.
     fbx.scale.setScalar(FBX_SCALE * (TARGET_HEIGHT / Math.max(0.001, size.y)));
-    fbx.updateMatrix월드(true);
+    fbx.updateMatrixWorld(true);
     box.setFromObject(fbx);
     box.getSize(size);
     box.getCenter(center);
@@ -264,10 +264,10 @@ export class CharacterController {
     this.mixer.update(dt);
 
     if (!this.sitting?.valid) return;
-    this._pose시간 += dt;
+    this._poseTime += dt;
 
     const target = this.isSitting ? 1 : 0;
-    const step = dt / Math.max(0.001, this._poseBlend ?? settings.character.blend시간);
+    const step = dt / Math.max(0.001, this._poseBlend ?? settings.character.blendTime);
     this._poseWeight = MathUtils.clamp(
       this._poseWeight + MathUtils.clamp(target - this._poseWeight, -step, step),
       0,
@@ -275,7 +275,7 @@ export class CharacterController {
     );
 
     // Ease the blend so the sit settles instead of arriving at constant speed.
-    this.sitting.apply(MathUtils.smoothstep(this._poseWeight, 0, 1), this._pose시간);
+    this.sitting.apply(MathUtils.smoothstep(this._poseWeight, 0, 1), this._poseTime);
   }
 
   get position() {

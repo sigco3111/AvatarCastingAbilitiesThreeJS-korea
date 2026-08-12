@@ -269,7 +269,7 @@ export class WindAbility extends Ability {
    */
   _buildRibbonPoints(entry, count) {
     const c = settings.wind;
-    const time = frame.u시간.value;
+    const time = frame.uTime.value;
     const turb = c.turbulence * c.spiralRadius * 0.9;
 
     for (let i = 0; i < count; i++) {
@@ -362,7 +362,7 @@ export class WindAbility extends Ability {
   _emitDebris(dt) {
     const c = settings.wind;
     const g = settings.global;
-    const time = frame.u시간.value;
+    const time = frame.uTime.value;
 
     const head = _pos.copy(this.position).setY(this.position.y + 0.9);
     _dir.copy(this.tangent);
@@ -414,7 +414,7 @@ export class WindAbility extends Ability {
   onImpact() {
     const c = settings.wind;
     const g = settings.global;
-    const time = frame.u시간.value;
+    const time = frame.uTime.value;
 
     const inner = getColor(c.colorInner);
     const outer = getColor(c.colorOuter);
@@ -562,7 +562,7 @@ export class WindAbility extends Ability {
           _emit.spin = 0;
           _emit.tint = null;
           _emit.inherit = null;
-          _emit.time = frame.u시간.value;
+          _emit.time = frame.uTime.value;
           this.dust.emit(1, _emit);
         }
       }
@@ -589,7 +589,7 @@ export class WindAbility extends Ability {
         _emit.spin = c.leafSpin;
         _emit.tint = randomLeafTint();
         _emit.inherit = null;
-        _emit.time = frame.u시간.value;
+        _emit.time = frame.uTime.value;
         this.leaves.emit(3, _emit);
         _emit.tint = null;
         this.dust.emit(5, _emit);

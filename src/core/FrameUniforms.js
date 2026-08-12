@@ -26,7 +26,7 @@ export const frame = {
 /** Convenience: the uniform block every VFX material wants. */
 export function sharedUniforms(extra = {}) {
   return {
-    uTime: frame.u시간,
+    uTime: frame.uTime,
     uResolution: frame.uResolution,
     uSceneDepth: frame.uSceneDepth,
     uCameraNear: frame.uCameraNear,

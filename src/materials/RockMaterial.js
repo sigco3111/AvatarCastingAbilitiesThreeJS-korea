@@ -36,7 +36,7 @@ export function createRockMaterial(environment, mossAmount = 1) {
       .replace(
         '#include <common>',
         `#include <common>
-         varying vec3 vRock월드;
+         varying vec3 vRockWorld;
          varying vec3 vRockLocal;`
       )
       .replace(
@@ -44,9 +44,9 @@ export function createRockMaterial(environment, mossAmount = 1) {
         `#include <begin_vertex>
          vRockLocal = transformed;
          #ifdef USE_INSTANCING
-           vRock월드 = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;
+           vRockWorld = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;
          #else
-           vRock월드 = (modelMatrix * vec4(transformed, 1.0)).xyz;
+           vRockWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;
          #endif`
       );
 
@@ -60,7 +60,7 @@ export function createRockMaterial(environment, mossAmount = 1) {
          uniform vec3 uGlowColor;
          uniform float uGlow;
          uniform float uMoss;
-         varying vec3 vRock월드;
+         varying vec3 vRockWorld;
          varying vec3 vRockLocal;
          ${noiseGLSL}`
       )
@@ -73,7 +73,7 @@ export function createRockMaterial(environment, mossAmount = 1) {
          {
            // Strata and grain.
            float strata = snoise01(vRockLocal * vec3(2.0, 9.0, 2.0));
-           float grain = fbm3(vRock월드 * 5.5) * 0.5 + 0.5;
+           float grain = fbm3(vRockWorld * 5.5) * 0.5 + 0.5;
            vec3 rock = mix(uColorDark, uColorRock, strata * 0.6 + grain * 0.5);
 
            // Moss clings to upward-facing surfaces.

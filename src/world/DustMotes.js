@@ -110,7 +110,7 @@ export class DustMotes {
   }
 
   update(elapsed, anchor) {
-    this.material.uniforms.u시간.value = elapsed;
+    this.material.uniforms.uTime.value = elapsed;
     this.material.uniforms.uAmount.value = settings.environment.dustAmount;
     // Keep the volume centred on the action without re-uploading positions.
     if (anchor) this.points.position.set(anchor.x, 0, anchor.z);

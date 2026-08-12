@@ -114,7 +114,7 @@ export class Environment {
    * Load the HDR probe. It lights the scene (IBL) but is deliberately *not*
    * used as the background — the stage keeps its flat dark backdrop.
    */
-  async load환경(hdrTexture) {
+  async loadEnvironment(hdrTexture) {
     this._pmrem = new PMREMGenerator(this.renderer.gl);
     this._pmrem.compileEquirectangularShader();
 

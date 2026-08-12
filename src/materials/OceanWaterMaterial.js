@@ -109,7 +109,7 @@ export class OceanWaterMaterial extends ShaderMaterial {
         varying vec3  vTangent;
         varying float vS;
         varying float vRadius;
-        varying vec3  v월드;
+        varying vec3  vWorld;
         varying float vRandom;
 
         void main() {
@@ -128,7 +128,7 @@ export class OceanWaterMaterial extends ShaderMaterial {
                   * (1.0 + (uHeadSize - 1.0) * smoothstep(0.62, 1.0, u));
 
           vec4 world = modelMatrix * vec4(position, 1.0);
-          v월드 = world.xyz;
+          vWorld = world.xyz;
           gl_Position = projectionMatrix * viewMatrix * world;
         }
       `,
@@ -181,7 +181,7 @@ export class OceanWaterMaterial extends ShaderMaterial {
         varying vec3  vTangent;
         varying float vS;
         varying float vRadius;
-        varying vec3  v월드;
+        varying vec3  vWorld;
         varying float vRandom;
 
         ${noiseGLSL}
@@ -394,7 +394,7 @@ export class OceanWaterMaterial extends ShaderMaterial {
 
         void main() {
           vec3 ro = cameraPosition;
-          vec3 rd = normalize(v월드 - ro);
+          vec3 rd = normalize(vWorld - ro);
 
           // The hull is a camera-facing strip through the axis, so the body sits
           // in a slab around the ray's closest approach to it. Looking down the

@@ -83,7 +83,7 @@ export class WaterAbility extends Ability {
       this.group.add(mesh);
     }
 
-    this._wake시간r = 0;
+    this._wakeTimer = 0;
   }
 
   createParticles() {
@@ -161,7 +161,7 @@ export class WaterAbility extends Ability {
    */
   pathHeight(u) {
     const c = settings.water;
-    const phase = u * c.surgeLength * Math.PI * 2 - frame.u시간.value * c.surgeSpeed;
+    const phase = u * c.surgeLength * Math.PI * 2 - frame.uTime.value * c.surgeSpeed;
     return c.height * (0.4 + 0.6 * smoothstep(0, 0.25, u)) + c.surge * Math.sin(phase);
   }
 
@@ -172,7 +172,7 @@ export class WaterAbility extends Ability {
     this.mistEmitter.reset();
     this.waterMaterial.uniforms.uSeed.value = Math.random() * 20;
     this.ribbon.clear();
-    this._wake시간r = 0;
+    this._wakeTimer = 0;
   }
 
   /** Keep every shader/particle uniform in step with the editor. */
@@ -303,7 +303,7 @@ export class WaterAbility extends Ability {
   _emitStream(dt) {
     const c = settings.water;
     const g = settings.global;
-    const time = frame.u시간.value;
+    const time = frame.uTime.value;
     const countScale = g.particleCount;
     const radius = c.radius * c.headSize;
 
@@ -407,9 +407,9 @@ export class WaterAbility extends Ability {
     const c = settings.water;
     if (c.wakeRate <= 0) return;
 
-    this._wake시간r += dt * c.wakeRate;
-    if (this._wake시간r < 1) return;
-    this._wake시간r = 0;
+    this._wakeTimer += dt * c.wakeRate;
+    if (this._wakeTimer < 1) return;
+    this._wakeTimer = 0;
 
     this.ctx.decals.spawn(DecalType.RIPPLE, this.position, {
       radius: c.radius * randRange(1.4, 2.2),
@@ -426,7 +426,7 @@ export class WaterAbility extends Ability {
   onImpact() {
     const c = settings.water;
     const g = settings.global;
-    const time = frame.u시간.value;
+    const time = frame.uTime.value;
     const scale = c.splashSize * g.explosionIntensity;
     const countScale = g.particleCount;
 
