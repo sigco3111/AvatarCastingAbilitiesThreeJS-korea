@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>원소 조형 샌드박스 — 4원소 VFX 놀이터</title>
+    <link rel="preload" as="fetch" href="./models/Standing%20Idle.fbx" crossorigin />
+    <script type="module" crossorigin src="/AvatarCastingAbilitiesThreeJS-korea/assets/index-1f6owHLf.js"></script>
+    <link rel="stylesheet" crossorigin href="/AvatarCastingAbilitiesThreeJS-korea/assets/index-DjQ0bnXD.css">
+  </head>
+  <body>
+    <canvas id="viewport"></canvas>
+
+    <!-- 부팅 / 로딩 화면 -->
+    <div id="loader" class="loader">
+      <div class="loader__inner">
+        <div class="loader__sigil">
+          <span class="sigil sigil--fire"></span>
+          <span class="sigil sigil--water"></span>
+          <span class="sigil sigil--earth"></span>
+          <span class="sigil sigil--air"></span>
+        </div>
+        <h1 class="loader__title">원소 조형 샌드박스</h1>
+        <div class="loader__bar"><i id="loader-fill"></i></div>
+        <p class="loader__status" id="loader-status">원소들을 소환하는 중…</p>
+      </div>
+    </div>
+
+    <!-- Heads-up display (정적 스켈레톤 — JS init로 즉시 채워짐) -->
+    <div id="hud" class="hud" aria-live="polite">
+      <div class="hud__panel hud__title">
+        <span>원소 조형 샌드박스</span>
+        <span>경로를 그리고, 마우스를 떼면 시전합니다.</span>
+        <!-- 한/영 토글 — 타이틀 패널 안 우측 상단 (lil-gui에 절대 안 가려짐) -->
+        <button class="hud__lang-toggle" type="button" aria-label="한/영 토글">
+          <span class="hud__lang-toggle__cur">한국어</span>
+          <span class="hud__lang-toggle__sep">·</span>
+          <span class="hud__lang-toggle__alt">EN</span>
+        </button>
+      </div>
+    </div>
+
+  </body>
+</html>
