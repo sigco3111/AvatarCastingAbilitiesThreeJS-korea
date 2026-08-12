@@ -41,7 +41,7 @@ export class DistortionMaterial extends ShaderMaterial {
       vertexShader: /* glsl */ `
         uniform float uHeight;
         varying vec2 vUv;
-        varying vec3 vWorld;
+        varying vec3 v월드;
 
         void main() {
           vUv = uv;
@@ -50,12 +50,12 @@ export class DistortionMaterial extends ShaderMaterial {
             pos.y += uv.y * (uHeight - 1.0);
           #endif
           vec4 world = modelMatrix * vec4(pos, 1.0);
-          vWorld = world.xyz;
+          v월드 = world.xyz;
           gl_Position = projectionMatrix * viewMatrix * world;
         }
       `,
       fragmentShader: /* glsl */ `
-        uniform float uTime;
+        uniform float u시간;
         uniform float uStrength;
         uniform float uFrequency;
         uniform float uSpeed;
@@ -65,12 +65,12 @@ export class DistortionMaterial extends ShaderMaterial {
         uniform float uShaderIntensity;
 
         varying vec2 vUv;
-        varying vec3 vWorld;
+        varying vec3 v월드;
 
         ${noiseGLSL}
 
         void main() {
-          vec3 np = vec3(vWorld.xz * uFrequency, vWorld.y * uFrequency * 0.6 - uTime * uSpeed * uRise + uSeed);
+          vec3 np = vec3(v월드.xz * uFrequency, v월드.y * uFrequency * 0.6 - u시간 * uSpeed * uRise + uSeed);
           float nx = snoise(np);
           float ny = snoise(np + vec3(19.3, 7.7, 31.1));
 

@@ -206,7 +206,7 @@ export class VolumetricFireMaterial extends ShaderMaterial {
         varying vec3  vTangent;
         varying float vS;
         varying float vRadius;
-        varying vec3  vWorld;
+        varying vec3  v월드;
         varying float vRandom;
 
         ${PROFILE_GLSL}
@@ -227,12 +227,12 @@ export class VolumetricFireMaterial extends ShaderMaterial {
                   * (1.0 + (uHeadSize - 1.0) * smoothstep(0.62, 1.0, u));
 
           vec4 world = modelMatrix * vec4(position, 1.0);
-          vWorld = world.xyz;
+          v월드 = world.xyz;
           gl_Position = projectionMatrix * viewMatrix * world;
         }
       `,
       fragmentShader: /* glsl */ `
-        uniform float uTime;
+        uniform float u시간;
         uniform float uRadius;
         uniform float uHeadSize;
         uniform float uPlume;
@@ -292,7 +292,7 @@ export class VolumetricFireMaterial extends ShaderMaterial {
         varying vec3  vTangent;
         varying float vS;
         varying float vRadius;
-        varying vec3  vWorld;
+        varying vec3  v월드;
         varying float vRandom;
 
         ${noiseGLSL}
@@ -476,7 +476,7 @@ export class VolumetricFireMaterial extends ShaderMaterial {
           float qNominal = rad / max(radius, 1e-3);
           if (qNominal > REACH_HI * (1.0 + uBulge)) return 0.0;
 
-          float sFlow = s - uTime * uFlow;                    // streams backwards
+          float sFlow = s - u시간 * uFlow;                    // streams backwards
 
           // ---- 1. silhouette: metre-scale lobes -------------------------
           // One octave, wavelength of order the flame's own width. A fireball's
@@ -484,7 +484,7 @@ export class VolumetricFireMaterial extends ShaderMaterial {
           // frequency can only nibble the edge of a capsule and the result still
           // reads as a shaded tube.
           float lobe = vnoise(vec3(px, py * 0.8, sFlow * 0.7) * uBulgeScale
-                              + vec3(uSeed, uTime * 0.25, 0.0)) * 2.0 - 1.0;
+                              + vec3(uSeed, u시간 * 0.25, 0.0)) * 2.0 - 1.0;
           radius *= 1.0 + uBulge * lobe;
 
           float q = rad / max(radius, 1e-3);
@@ -494,7 +494,7 @@ export class VolumetricFireMaterial extends ShaderMaterial {
           // ---- 2. vortex roll-up ----------------------------------------
           // Noise domain attached to the stream (a local frame around the axis)
           // so the fire is carried along instead of swimming through the world.
-          vec2 rp = rot2(s * uSwirl * 0.3 + uTime * uSwirlSpeed + uSeed) * vec2(px, py);
+          vec2 rp = rot2(s * uSwirl * 0.3 + u시간 * uSwirlSpeed + uSeed) * vec2(px, py);
 
           // Hot gas sheds ring vortices that travel back down the wake and grow
           // as they age. Rotating the domain in the (streamwise, vertical) plane
@@ -503,7 +503,7 @@ export class VolumetricFireMaterial extends ShaderMaterial {
           // count, makes clouds; it never makes curls. The rotation is strongest
           // on the axis and dies off outside the tube, so the fringe is sheared
           // past the core rather than rotating rigidly with it.
-          float phase = s * uRingFreq - uTime * uRingSpeed + uSeed;
+          float phase = s * uRingFreq - u시간 * uRingSpeed + uSeed;
           float roll = uVortex * sin(phase * 6.2831853)
                      * smoothstep(0.0, 0.32, age) * exp(-q * q * 0.7);
           vec2 rolled = rot2(roll) * vec2(sFlow * uStreamStretch, rp.y * uTongue);
@@ -512,7 +512,7 @@ export class VolumetricFireMaterial extends ShaderMaterial {
           // Anisotropic on purpose: a lower frequency vertically and along the
           // flow draws every structure out into a tall, streamwise tongue.
           vec3 np = vec3(rp.x, rolled.y, rolled.x) * uNoiseFrequency;
-          np.y -= uTime * uBuoyancy;                          // hot gas climbs
+          np.y -= u시간 * uBuoyancy;                          // hot gas climbs
 
           // Radial shear. Gas at the fringe is unconfined and has been climbing
           // and falling behind for longer than gas on the axis, so the domain is
@@ -524,7 +524,7 @@ export class VolumetricFireMaterial extends ShaderMaterial {
           np.z += uLick * 0.45 * q * q;
 
           float ridge, coarse;
-          float n = flameFbm(np, uTime * uBuoyancy * 0.06, ridge, coarse) * 2.0 - 1.0;
+          float n = flameFbm(np, u시간 * uBuoyancy * 0.06, ridge, coarse) * 2.0 - 1.0;
           coarse = coarse * 2.0 - 1.0;
 
           // Filaments belong to the fringe. In the body they only mottle a core
@@ -619,7 +619,7 @@ export class VolumetricFireMaterial extends ShaderMaterial {
 
         void main() {
           vec3 ro = cameraPosition;
-          vec3 rd = normalize(vWorld - ro);
+          vec3 rd = normalize(v월드 - ro);
 
           // The hull is a camera-facing strip through the axis, so every pixel
           // gets exactly one fragment and that fragment has to march the whole
@@ -678,7 +678,7 @@ export class VolumetricFireMaterial extends ShaderMaterial {
           float baseStep = (t1 - t0) / steps;
           // Dither the entry point: a fixed start turns the slices into visible
           // onion rings, a per-pixel offset turns them into grain the bloom eats.
-          float t = t0 + baseStep * hash13(vec3(gl_FragCoord.xy, fract(uTime) * 64.0));
+          float t = t0 + baseStep * hash13(vec3(gl_FragCoord.xy, fract(u시간) * 64.0));
 
           // One flicker value for the whole ray — the flame brightens and dims
           // as a body, not per sample. Two rates: a slow roll from the bulk of
@@ -686,8 +686,8 @@ export class VolumetricFireMaterial extends ShaderMaterial {
           // Amplitude deliberately modest and clamped. This multiplies the whole
           // ray, so a swing wide enough to look dramatic on paper reads on screen
           // as the fireball guttering out for a frame at a time.
-          float flickN = vnoise(vec3(uTime * 5.3, uSeed, 0.0)) * 0.7
-                       + vnoise(vec3(uTime * 13.1, uSeed * 2.0, 5.0)) * 0.3;
+          float flickN = vnoise(vec3(u시간 * 5.3, uSeed, 0.0)) * 0.7
+                       + vnoise(vec3(u시간 * 13.1, uSeed * 2.0, 5.0)) * 0.3;
           float flick = clamp(1.0 + uFlicker * 0.6 * (flickN * 2.0 - 1.0), 0.4, 1.7);
 
           vec3 acc = vec3(0.0);

@@ -1,7 +1,7 @@
 import GUI from 'lil-gui';
 import { settings, ELEMENTS, MODES } from '../config/settings.js';
 import { PresetManager } from './PresetManager.js';
-import { t, locale, onChange as subscribeLocaleChange } from './i18n.js';
+import { t, locale, onChange as 구독LocaleChange } from './i18n.js';
 
 /**
  * 실시간 VFX 에디터.
@@ -13,12 +13,12 @@ import { t, locale, onChange as subscribeLocaleChange } from './i18n.js';
  * 업데이트된다.
  *
  * i18n 연동:
- *   각 컨트롤은 라벨을 `t(key)`로 표시하고, `__i18nKey` 메타데이터로 키를 보관.
+ *   각 컨트롤은 라벨을 `t(key)` 로 표시하고, `__i18nKey` 메타데이터로 키를 보관.
  *   언어가 바뀌면 모든 컨트롤러를 순회하며 표시 라벨을 다시 그린다.
  */
 export class Editor {
   /**
-   * @param {object} hooks { onClear, onToast }
+   * @param {object} hooks { onClear, onToast } 콜백 훅
    */
   constructor(hooks = {}) {
     this.hooks = hooks;
@@ -33,7 +33,7 @@ export class Editor {
     this._buildGlobal();
     this._buildTrail();
     for (const element of ELEMENTS) this._buildElement(element);
-    this._buildEnvironment();
+    this._build환경();
     this._buildPost();
     this._buildCamera();
     this._buildCharacter();
@@ -43,11 +43,11 @@ export class Editor {
     this.gui.folders.forEach((folder) => folder.close());
     this.globalFolder.open();
 
-    this._unsubscribeLocale = subscribeLocaleChange(() => this._refreshLabels());
+    this._un구독Locale = 구독LocaleChange(() => this._refreshLabels());
   }
 
   /* ------------------------------------------------------------------ */
-  /* helpers                                                             */
+  /* 헬퍼                                                                 */
   /* ------------------------------------------------------------------ */
 
   /**
@@ -84,10 +84,12 @@ export class Editor {
     return controller;
   }
 
+  /** 모든 컨트롤러의 표시를 갱신. */
   refresh() {
     this.gui.controllersRecursive().forEach((controller) => controller.updateDisplay());
   }
 
+  /** 에디터 패널 자체 표시/숨김. */
   toggle() {
     this._hidden = !this._hidden;
     this.gui.show(!this._hidden);
@@ -113,7 +115,7 @@ export class Editor {
   }
 
   /* ------------------------------------------------------------------ */
-  /* presets                                                             */
+  /* 프리셋                                                               */
   /* ------------------------------------------------------------------ */
 
   _buildPresets() {
@@ -175,21 +177,21 @@ export class Editor {
     Editor.label(folder, { exportAll: () => this.presets.exportAll() }, 'exportAll', 'preset.exportAll');
 
     Editor.label(folder, {
-      import: async () => {
-        const result = await this.presets.importFromFile();
+      가져오기: async () => {
+        const result = await this.presets.가져오기FromFile();
         refreshOptions();
         this.refresh();
         const applied = result.applied;
-        const imported = result.imported?.length ?? 0;
+        const 가져오기ed = result.가져오기ed?.length ?? 0;
         this.hooks.onToast?.(
           applied
-            ? t('toast.imported')
-            : imported
-              ? t('toast.imported') + ` (${imported})`
-              : t('toast.imported') + ' — 0'
+            ? t('toast.가져오기ed')
+            : 가져오기ed
+              ? t('toast.가져오기ed') + ` (${가져오기ed})`
+              : t('toast.가져오기ed') + ' — 0'
         );
       }
-    }, 'import', 'preset.import');
+    }, '가져오기', 'preset.가져오기');
 
     Editor.label(folder, {
       reset: () => {
@@ -199,7 +201,7 @@ export class Editor {
       }
     }, 'reset', 'preset.reset');
 
-    // keep references so editor hints can re-render labels
+    // 토글 시 라벨 재렌더링을 위해 참조 보존
     this._presetNameController = nameController;
     this.presetFolder = folder;
   }
@@ -443,7 +445,7 @@ export class Editor {
         R(crust, c, 'crustDensity', 0.2, 3, 0.01, 'earth.crustDensity');
         R(crust, c, 'plateSize', 0.2, 3, 0.01, 'earth.plateSize');
         R(crust, c, 'plateThickness', 0.02, 1, 0.01, 'earth.plateThickness');
-        R(crust, c, 'paintTime', 0.03, 1.5, 0.01, 'earth.paintTime');
+        R(crust, c, 'paint시간', 0.03, 1.5, 0.01, 'earth.paint시간');
 
         const fracture = Editor.folder(folder, 'earth.fracture');
         R(fracture, c, 'crackDelay', 0.02, 3, 0.01, 'earth.crackDelay');
@@ -484,7 +486,7 @@ export class Editor {
         const impact = Editor.folder(folder, 'folder.heat');
         R(impact, c, 'towerHeight', 0.5, 20, 0.05, 'earth.towerHeight');
         R(impact, c, 'towerWidth', 0.1, 5, 0.01, 'earth.towerWidth');
-        R(impact, c, 'towerRiseTime', 0.1, 4, 0.01, 'earth.towerRiseTime');
+        R(impact, c, 'towerRise시간', 0.1, 4, 0.01, 'earth.towerRise시간');
         R(impact, c, 'towerHold', 0, 8, 0.05, 'earth.towerHold');
         R(impact, c, 'towerRocks', 0, 60, 1, 'earth.towerRocks');
         R(impact, c, 'towerRockRadius', 0.2, 8, 0.05, 'earth.towerRockRadius');
@@ -555,7 +557,7 @@ export class Editor {
     };
   }
 
-  _buildEnvironment() {
+  _build환경() {
     const folder = Editor.folder(this.gui, 'folder.environment');
     const e = settings.environment;
     const R = Editor.range;
@@ -578,7 +580,7 @@ export class Editor {
     R(rim, e, 'rimAzimuth', 0, Math.PI * 2, 0.01, 'env.rimAzimuth');
     R(rim, e, 'rimElevation', 0.05, 1.5, 0.01, 'env.rimElevation');
     Editor.color(rim, e, 'hemiSkyColor', 'env.hemiSky');
-    Editor.color(rim, e, 'hemiGroundColor', 'env.hemiGround');
+    Editor.color(rim, e, 'hemi지면Color', 'env.hemi지면');
 
     const fog = Editor.folder(folder, 'env.backdrop');
     Editor.color(fog, e, 'backgroundColor', 'env.background');
@@ -643,7 +645,7 @@ export class Editor {
 
     // 컨트롤러가 `pose`를 매 프레임 폴링하므로 드롭다운은 핸들러 불요.
     Editor.label(folder, c, 'pose', 'character.pose');
-    R(folder, c, 'blendTime', 0.05, 3, 0.01, 'character.blendTime');
+    R(folder, c, 'blend시간', 0.05, 3, 0.01, 'character.blend시간');
     R(folder, settings.global, 'animationSpeed', 0.1, 3, 0.01, 'character.idleSpeed');
 
     // 아래 항목들은 seated pose 가 바뀔 때마다 재구성된다.
@@ -684,7 +686,7 @@ export class Editor {
     R(ride, c, 'speed', 0.5, 16, 0.1, 'walk.speed');
     R(ride, c, 'accel', 0.01, 3, 0.01, 'walk.accel');
     R(ride, c, 'brake', 0.05, 3, 0.01, 'walk.brake');
-    R(ride, c, 'dismountTime', 0.1, 2, 0.01, 'walk.dismountTime');
+    R(ride, c, 'dismount시간', 0.1, 2, 0.01, 'walk.dismount시간');
     R(ride, c, 'hover', 0, 0.5, 0.005, 'walk.hover');
     R(ride, c, 'seatSink', 0, 1, 0.01, 'walk.seatSink');
     R(ride, c, 'bob', 0, 0.3, 0.005, 'walk.bob');
@@ -722,8 +724,9 @@ export class Editor {
     this.walkFolder = folder;
   }
 
+  /** 리소스 정리 (Vercel 환경에선 거의 호출되지 않음). */
   dispose() {
-    this._unsubscribeLocale?.();
+    this._un구독Locale?.();
     this.gui.destroy();
   }
 }

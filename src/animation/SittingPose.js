@@ -134,11 +134,11 @@ export class SittingPose {
 
   /** Index the skeleton, snapshot the bind pose and derive the rig's axes. */
   _collect() {
-    this.model.updateMatrixWorld(true);
+    this.model.updateMatrix월드(true);
     // Where the rig's own origin sits while it is standing on the floor. Every
     // later bake measures the ground relative to this, so moving the character
     // does not drag the seated pose off the floor with it.
-    this.modelBaseY = this.model.getWorldPosition(new Vector3()).y;
+    this.modelBaseY = this.model.get월드Position(new Vector3()).y;
 
     this.model.traverse((node) => {
       if (node.isSkinnedMesh && !this.skin) {
@@ -154,7 +154,7 @@ export class SittingPose {
       this.rest.set(node, {
         quaternion: node.quaternion.clone(),
         position: node.position.clone(),
-        world: node.getWorldQuaternion(new Quaternion())
+        world: node.get월드Quaternion(new Quaternion())
       });
 
       const spec = resolveSpec(short);
@@ -174,7 +174,7 @@ export class SittingPose {
     const foot = this.bones.get('LeftFoot');
     const toe = this.bones.get('LeftToeBase');
     if (foot && toe) {
-      toe.getWorldPosition(_dir).sub(foot.getWorldPosition(_pos)).setY(0);
+      toe.get월드Position(_dir).sub(foot.get월드Position(_pos)).setY(0);
       if (_dir.lengthSq() > 1e-6) this.forward.copy(_dir).normalize();
     }
     this.left = new Vector3().crossVectors(this.up, this.forward).normalize();
@@ -236,7 +236,7 @@ export class SittingPose {
       bone.quaternion.copy(rest.quaternion);
       bone.position.copy(rest.position);
     }
-    this.model.updateMatrixWorld(true);
+    this.model.updateMatrix월드(true);
   }
 
   _applySpec(entry) {
@@ -266,11 +266,11 @@ export class SittingPose {
 
   /** Aim `bone` (measured towards `child`) along a world direction, then roll it. */
   _orient(bone, child, targetDir, twistDeg) {
-    child.getWorldPosition(_from).sub(bone.getWorldPosition(_pos));
+    child.get월드Position(_from).sub(bone.get월드Position(_pos));
     if (_from.lengthSq() < 1e-10) return;
     _from.normalize();
 
-    bone.getWorldQuaternion(_qa);
+    bone.get월드Quaternion(_qa);
     _qb.setFromUnitVectors(_from, targetDir);
     if (twistDeg) {
       _qc.setFromAxisAngle(targetDir, twistDeg * DEG);
@@ -278,9 +278,9 @@ export class SittingPose {
     }
     _qa.premultiply(_qb); // final world orientation
 
-    bone.parent.getWorldQuaternion(_qd).invert();
+    bone.parent.get월드Quaternion(_qd).invert();
     bone.quaternion.copy(_qd.multiply(_qa));
-    bone.updateMatrixWorld(true);
+    bone.updateMatrix월드(true);
   }
 
   /**
@@ -288,10 +288,10 @@ export class SittingPose {
    * is carried along by whatever the parents are already doing.
    */
   _rotate(bone, list, sign) {
-    const restWorld = this.rest.get(bone).world;
-    _qd.copy(restWorld).invert();
+    const rest월드 = this.rest.get(bone).world;
+    _qd.copy(rest월드).invert();
 
-    bone.getWorldQuaternion(_qa);
+    bone.get월드Quaternion(_qa);
     for (const [name, degrees] of list) {
       const flip = name === 'right' ? 1 : sign; // mirroring keeps left/right bends
       _axis.copy(this.axes[name]).applyQuaternion(_qd);
@@ -299,9 +299,9 @@ export class SittingPose {
       _qa.multiply(_qb);
     }
 
-    bone.parent.getWorldQuaternion(_qc).invert();
+    bone.parent.get월드Quaternion(_qc).invert();
     bone.quaternion.copy(_qc.multiply(_qa));
-    bone.updateMatrixWorld(true);
+    bone.updateMatrix월드(true);
   }
 
   _childOf(entry) {
@@ -314,7 +314,7 @@ export class SittingPose {
 
   /** Drop the hips until the seat and the folded legs rest on the floor. */
   _ground() {
-    this.model.updateMatrixWorld(true);
+    this.model.updateMatrix월드(true);
 
     const lowest = this._lowestPoint();
     if (!Number.isFinite(lowest)) return;
@@ -322,12 +322,12 @@ export class SittingPose {
     // Measured against the floor *under the rig*, not world zero: a re-bake can
     // land while walk mode has the character airborne on the air scooter, and
     // the pose still has to be grounded on the ground he will come back to.
-    const base = this.model.getWorldPosition(_from).y - this.modelBaseY;
+    const base = this.model.get월드Position(_from).y - this.modelBaseY;
 
-    this.hips.parent.matrixWorld.decompose(_pos, _qa, _scale);
+    this.hips.parent.matrix월드.decompose(_pos, _qa, _scale);
     const unit = Math.max(1e-6, _scale.y); // world metres per bone unit
     this.hips.position.y = this.hipsRest.y + (settings.character.seatClearance - (lowest - base)) / unit;
-    this.model.updateMatrixWorld(true);
+    this.model.updateMatrix월드(true);
   }
 
   /**
@@ -342,7 +342,7 @@ export class SittingPose {
     let lowest = Infinity;
     for (let i = 0; i < position.count; i += this.skinStride) {
       _pos.fromBufferAttribute(position, i);
-      this.skin.applyBoneTransform(i, _pos).applyMatrix4(this.skin.matrixWorld);
+      this.skin.applyBoneTransform(i, _pos).applyMatrix4(this.skin.matrix월드);
       if (_pos.y < lowest) lowest = _pos.y;
     }
     return lowest;
@@ -361,14 +361,14 @@ export class SittingPose {
       if (!shoulder || !elbow || !wrist || !knee) continue;
 
       const sign = side === 'Left' ? 1 : -1;
-      const root = shoulder.getWorldPosition(new Vector3());
-      const upper = elbow.getWorldPosition(new Vector3()).distanceTo(root);
-      const lower = wrist.getWorldPosition(new Vector3()).distanceTo(elbow.getWorldPosition(_pos));
+      const root = shoulder.get월드Position(new Vector3());
+      const upper = elbow.get월드Position(new Vector3()).distanceTo(root);
+      const lower = wrist.get월드Position(new Vector3()).distanceTo(elbow.get월드Position(_pos));
 
       // Palms rest on the kneecap: above the joint centre, and pulled back
       // along the thigh so the hand covers the knee instead of hanging off it.
-      const kneePos = knee.getWorldPosition(new Vector3());
-      const thigh = kneePos.clone().sub(knee.parent.getWorldPosition(_pos)).normalize();
+      const kneePos = knee.get월드Position(new Vector3());
+      const thigh = kneePos.clone().sub(knee.parent.get월드Position(_pos)).normalize();
       const target = kneePos
         .clone()
         .addScaledVector(this.up, settings.character.handHeight)
@@ -390,7 +390,7 @@ export class SittingPose {
       const elbowPos = root.clone().addScaledVector(toTarget, along).addScaledVector(pole, out);
 
       this._orient(shoulder, elbow, elbowPos.clone().sub(root).normalize(), 0);
-      this._orient(elbow, wrist, target.clone().sub(elbow.getWorldPosition(_pos)).normalize(), 0);
+      this._orient(elbow, wrist, target.clone().sub(elbow.get월드Position(_pos)).normalize(), 0);
 
       // Re-aim the hand so the palm keeps its authored roll after the IK.
       const handEntry = this.entries.find((entry) => entry.bone === wrist);

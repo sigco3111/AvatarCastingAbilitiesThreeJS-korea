@@ -40,7 +40,7 @@ const SHADOW_EXTENT = 26;
  */
 export class Environment {
   /**
-   * @param {import('../core/Renderer.js').Renderer} renderer
+   * @param {import('../core/렌더러.js').렌더러} renderer
    * @param {THREE.PerspectiveCamera} camera
    */
   constructor(renderer, camera) {
@@ -63,7 +63,7 @@ export class Environment {
     );
     this.hemi = new HemisphereLight(
       getColor(settings.environment.hemiSkyColor).clone(),
-      getColor(settings.environment.hemiGroundColor).clone(),
+      getColor(settings.environment.hemi지면Color).clone(),
       settings.environment.hemiIntensity
     );
 
@@ -114,7 +114,7 @@ export class Environment {
    * Load the HDR probe. It lights the scene (IBL) but is deliberately *not*
    * used as the background — the stage keeps its flat dark backdrop.
    */
-  async loadEnvironment(hdrTexture) {
+  async load환경(hdrTexture) {
     this._pmrem = new PMREMGenerator(this.renderer.gl);
     this._pmrem.compileEquirectangularShader();
 
@@ -187,7 +187,7 @@ export class Environment {
     this.ambient.color.copy(getColor(env.ambientColor));
     this.hemi.intensity = env.hemiIntensity;
     this.hemi.color.copy(getColor(env.hemiSkyColor));
-    this.hemi.groundColor.copy(getColor(env.hemiGroundColor));
+    this.hemi.groundColor.copy(getColor(env.hemi지면Color));
 
     this.scene.environmentIntensity = env.envIntensity;
 

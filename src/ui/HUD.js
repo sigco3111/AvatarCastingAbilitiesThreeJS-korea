@@ -1,6 +1,6 @@
 import { ELEMENTS, MODES } from '../config/settings.js';
 import { ELEMENT_SIGILS } from './glyphs.js';
-import { t, locale, toggleLocale, onChange as subscribeLocaleChange } from './i18n.js';
+import { t, locale, toggleLocale, onChange as 구독LocaleChange } from './i18n.js';
 
 const ACCENTS = {
   fire: '#ff6a1a',
@@ -25,7 +25,7 @@ export class LoadingScreen {
     this.el = document.getElementById('loader');
     this.fill = document.getElementById('loader-fill');
     this.status = document.getElementById('loader-status');
-    this._unsubscribe = subscribeLocaleChange(() => this._refresh());
+    this._un구독 = 구독LocaleChange(() => this._refresh());
     this._refresh();
   }
 
@@ -56,7 +56,7 @@ export class LoadingScreen {
   }
 
   dispose() {
-    this._unsubscribe?.();
+    this._un구독?.();
   }
 }
 
@@ -74,13 +74,13 @@ export class HUD {
     this.onSelect = null;
     this.onMode = null;
     this.onLocaleToggle = null;
-    this._toastTimer = 0;
+    this._toast시간r = 0;
 
     this._renderShell();
     this._installClickDelegates();
     this._refresh();
 
-    this._unsubscribeLocale = subscribeLocaleChange(() => this._refresh());
+    this._un구독Locale = 구독LocaleChange(() => this._refresh());
   }
 
   _renderShell() {
@@ -272,8 +272,8 @@ export class HUD {
     if (!this.toast) return;
     this.toast.textContent = message;
     this.toast.classList.add('hud__toast--visible');
-    clearTimeout(this._toastTimer);
-    this._toastTimer = setTimeout(() => {
+    clear시간out(this._toast시간r);
+    this._toast시간r = set시간out(() => {
       this.toast.classList.remove('hud__toast--visible');
     }, 1600);
   }
@@ -286,7 +286,7 @@ export class HUD {
   }
 
   dispose() {
-    this._unsubscribeLocale?.();
+    this._un구독Locale?.();
   }
 }
 

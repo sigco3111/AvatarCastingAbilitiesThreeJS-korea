@@ -152,7 +152,7 @@ export class PostProcessing {
     this.bloomPass.enabled = post.enabled && post.bloomStrength > 0.001;
 
     const u = this.gradePass.uniforms;
-    u.uTime.value = elapsed;
+    u.u시간.value = elapsed;
     u.uAberration.value = post.enabled ? post.chromaticAberration : 0;
     u.uVignette.value = post.enabled ? post.vignette : 0;
     u.uContrast.value = post.enabled ? post.contrast : 1;

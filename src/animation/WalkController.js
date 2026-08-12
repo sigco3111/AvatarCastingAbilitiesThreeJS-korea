@@ -62,10 +62,10 @@ export class WalkController {
     this._home = new Vector3(); // where the whole sequence started
     this._exit = new Vector3(); // where the dismount started
     this._anchor = new Vector3(); // where the ball is, which is his seat minus him
-    this._leapTime = 0;
+    this._leap시간 = 0;
     this._leapDuration = 0;
-    this._rideTime = 0;
-    this._dismountTime = 0;
+    this._ride시간 = 0;
+    this._dismount시간 = 0;
     this._yaw = 0;
     this._lean = 0;
     this._landStanding = false; // the leap home, which ends on foot
@@ -106,7 +106,7 @@ export class WalkController {
     this.length = length;
     this.distance = 0;
     this.speed = 0;
-    this._rideTime = 0;
+    this._ride시간 = 0;
     this._landStanding = false;
 
     if (!this.active) this._home.copy(this.character.position);
@@ -167,7 +167,7 @@ export class WalkController {
     const reach = _p.copy(this._target).setY(0).distanceTo(_t.copy(this._from).setY(0));
 
     this.phase = Phase.LEAP;
-    this._leapTime = 0;
+    this._leap시간 = 0;
     this._leapDuration = clamp(reach / Math.max(0.5, c.jumpSpeed), c.jumpMin, c.jumpMax);
     this._yaw = this.character.facing;
 
@@ -184,8 +184,8 @@ export class WalkController {
 
   _updateLeap(dt) {
     const c = settings.walk;
-    this._leapTime += dt;
-    const t = saturate(this._leapTime / Math.max(0.05, this._leapDuration));
+    this._leap시간 += dt;
+    const t = saturate(this._leap시간 / Math.max(0.05, this._leapDuration));
 
     // Horizontal travel is near-linear (it is a jump, not an ease); the height
     // is the parabola through both ends.
@@ -219,7 +219,7 @@ export class WalkController {
     this._anchor.set(this._target.x, this.ballHeight, this._target.z);
     this.scooter.spawn(this._anchor);
     this.phase = Phase.RIDE;
-    this._rideTime = 0;
+    this._ride시간 = 0;
     this.distance = 0;
     this.speed = 0;
     this._land(1);
@@ -264,11 +264,11 @@ export class WalkController {
 
   _updateRide(dt) {
     const c = settings.walk;
-    this._rideTime += dt;
+    this._ride시간 += dt;
 
     /* ---- how fast he is going ---- */
     const remaining = Math.max(0, this.length - this.distance);
-    const rampIn = Easing.outCubic(saturate(this._rideTime / Math.max(0.01, c.accel)));
+    const rampIn = Easing.outCubic(saturate(this._ride시간 / Math.max(0.01, c.accel)));
     // Glide to a stop over the last `brake` seconds' worth of path, but never
     // below a crawl or the ride would asymptote and never finish.
     const brakeDistance = Math.max(0.05, c.speed * c.brake);
@@ -286,7 +286,7 @@ export class WalkController {
 
     // A hair of bounce, and a little more of it the faster he is moving.
     const bob =
-      Math.sin(this._rideTime * c.bobRate * TAU) * c.bob * saturate(this.speed / Math.max(0.5, c.speed));
+      Math.sin(this._ride시간 * c.bobRate * TAU) * c.bob * saturate(this.speed / Math.max(0.5, c.speed));
     this.character.root.position.set(_p.x, this.seatHeight + bob, _p.z);
 
     /* ---- bank into the turn ---- */
@@ -306,7 +306,7 @@ export class WalkController {
 
   _startDismount() {
     this.phase = Phase.DISMOUNT;
-    this._dismountTime = 0;
+    this._dismount시간 = 0;
     this._exit.copy(this.character.position);
     this.scooter.release();
     this.character.setPose('idle', settings.walk.poseBlend);
@@ -314,8 +314,8 @@ export class WalkController {
 
   _updateDismount(dt) {
     const c = settings.walk;
-    this._dismountTime += dt;
-    const t = saturate(this._dismountTime / Math.max(0.05, c.dismountTime));
+    this._dismount시간 += dt;
+    const t = saturate(this._dismount시간 / Math.max(0.05, c.dismount시간));
     const e = Easing.outCubic(t);
 
     // He steps off forward as the ball drops away under him.

@@ -188,7 +188,7 @@ export class EarthAbility extends Ability {
   /** The tower rises, stands, and only then does anything start to withdraw. */
   get impactDuration() {
     const c = settings.earth;
-    return Math.max(0.6, c.towerRiseTime + Math.max(0, c.towerHold));
+    return Math.max(0.6, c.towerRise시간 + Math.max(0, c.towerHold));
   }
 
   get fadeDuration() {
@@ -314,7 +314,7 @@ export class EarthAbility extends Ability {
   }
 
   /** Absolute age at which this plate lets go. */
-  _plateCrackTime(record, c) {
+  _plateCrack시간(record, c) {
     let delay;
     if (record.apron) {
       // The apron breaks outward from the tower, not on the crust's schedule.
@@ -362,7 +362,7 @@ export class EarthAbility extends Ability {
   _fractureFx(record, radius, tilt) {
     const c = settings.earth;
     const g = settings.global;
-    const time = frame.uTime.value;
+    const time = frame.u시간.value;
 
     _emit.position = this._platePosition(record, c, _pos).setY(0.08);
     _emit.radius = radius * 0.45;
@@ -403,12 +403,12 @@ export class EarthAbility extends Ability {
     const c = settings.earth;
     const g = settings.global;
     const now = this.age;
-    const paintTime = Math.max(0.03, c.paintTime);
-    const snapTime = Math.max(0.05, c.crackSharpness);
+    const paint시간 = Math.max(0.03, c.paint시간);
+    const snap시간 = Math.max(0.05, c.crackSharpness);
 
     for (let i = 0; i < MAX_PLATES; i++) {
       const record = this.plateRecords[i];
-      const paint = record.active ? saturate((now - record.paintAge) / paintTime) : 0;
+      const paint = record.active ? saturate((now - record.paintAge) / paint시간) : 0;
 
       if (paint <= 0) {
         _dummy.position.set(0, -999, 0);
@@ -430,15 +430,15 @@ export class EarthAbility extends Ability {
 
       let bite = 0;
       let lift = 0;
-      const crackAt = this._plateCrackTime(record, c);
+      const crackAt = this._plateCrack시간(record, c);
       if (now >= crackAt) {
         if (!record.cracked) {
           record.cracked = true;
           this._fractureFx(record, radius, tilt);
         }
         const since = now - crackAt;
-        const snap = Easing.outBack(saturate(since / snapTime));
-        const settle = Easing.inOutCubic(saturate((since - snapTime) / 1.1));
+        const snap = Easing.outBack(saturate(since / snap시간));
+        const settle = Easing.inOutCubic(saturate((since - snap시간) / 1.1));
         bite = snap;
         lift = throwHeight * (snap - settle * 0.45);
       } else {
@@ -533,7 +533,7 @@ export class EarthAbility extends Ability {
   /** Seconds a boulder stands before it sinks back. */
   _rockLife(record, c, g) {
     // The tower's ring has to stay up exactly as long as the tower does.
-    if (record.ring) return Math.max(0.05, c.towerRiseTime + Math.max(0, c.towerHold));
+    if (record.ring) return Math.max(0.05, c.towerRise시간 + Math.max(0, c.towerHold));
     return c.lifetime * 0.8 + c.sinkDelay + record.lifeJitter * c.rockRandomness * g.randomness;
   }
 
@@ -555,7 +555,7 @@ export class EarthAbility extends Ability {
     _emit.lifeVariance = 0.4;
     _emit.spin = 6;
     _emit.tint = null;
-    _emit.time = frame.uTime.value;
+    _emit.time = frame.u시간.value;
     this.debris.emit(Math.round(6 * settings.global.particleCount), _emit);
 
     this.ctx.decals.spawn(DecalType.DUSTRING, position, {
@@ -696,7 +696,7 @@ export class EarthAbility extends Ability {
   _emitDust(dt) {
     const c = settings.earth;
     const g = settings.global;
-    const time = frame.uTime.value;
+    const time = frame.u시간.value;
 
     const dustCount = Math.round(this.dustEmitter.tick(dt, 18 * c.dustAmount) * g.particleCount);
     if (dustCount > 0) {
@@ -740,7 +740,7 @@ export class EarthAbility extends Ability {
   onImpact() {
     const c = settings.earth;
     const g = settings.global;
-    const time = frame.uTime.value;
+    const time = frame.u시간.value;
 
     /* the tower starts fully buried and climbs out in onFade */
     this._towerAge = 0;
@@ -856,7 +856,7 @@ export class EarthAbility extends Ability {
   _towerBaseFx(dt) {
     const c = settings.earth;
     const g = settings.global;
-    const time = frame.uTime.value;
+    const time = frame.u시간.value;
 
     const count = Math.round(this.dustEmitter.tick(dt, 70 * c.dustAmount) * g.particleCount);
     if (count <= 0) return;
@@ -894,7 +894,7 @@ export class EarthAbility extends Ability {
     if (this._towerAge >= 0) {
       this._towerAge += dt;
       const p = this._towerAge;
-      const rise = Math.max(0.05, c.towerRiseTime);
+      const rise = Math.max(0.05, c.towerRise시간);
       const standing = rise + Math.max(0, c.towerHold);
       const climb = saturate(p / rise);
       retract = saturate((p - standing) / 1.5);

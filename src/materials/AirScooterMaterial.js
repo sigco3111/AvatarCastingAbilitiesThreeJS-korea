@@ -51,7 +51,7 @@ export class AirScooterMaterial extends ShaderMaterial {
         uFade: { value: 1.0 }
       }),
       vertexShader: /* glsl */ `
-        uniform float uTime;
+        uniform float u시간;
         uniform float uWobble;
         uniform float uBirth;
 
@@ -67,8 +67,8 @@ export class AirScooterMaterial extends ShaderMaterial {
 
           // Two out-of-phase fields breathing over the surface. A ball of air
           // should never hold a clean analytic silhouette.
-          float n = snoise(vPosL * 2.1 + vec3(0.0, uTime * 0.9, 0.0))
-                  + 0.5 * snoise(vPosL * 4.3 - vec3(uTime * 1.5, 0.0, 0.0));
+          float n = snoise(vPosL * 2.1 + vec3(0.0, u시간 * 0.9, 0.0))
+                  + 0.5 * snoise(vPosL * 4.3 - vec3(u시간 * 1.5, 0.0, 0.0));
           vec3 pos = position * (1.0 + n * uWobble * 0.35 * uBirth);
 
           vec4 world = modelMatrix * vec4(pos, 1.0);
@@ -81,7 +81,7 @@ export class AirScooterMaterial extends ShaderMaterial {
         }
       `,
       fragmentShader: /* glsl */ `
-        uniform float uTime;
+        uniform float u시간;
         uniform vec3  uColorInner;
         uniform vec3  uColorOuter;
         uniform float uOpacity;
@@ -121,11 +121,11 @@ export class AirScooterMaterial extends ShaderMaterial {
 
           // Streamline coordinate: constant along a curve that spirals from one
           // pole to the other. Adding time to it rolls the whole pattern.
-          float phase = (lon / TAU) * uBands + uTwist * asin(lat) * uBands / TAU + uTime * uSpin * uBands;
+          float phase = (lon / TAU) * uBands + uTwist * asin(lat) * uBands / TAU + u시간 * uSpin * uBands;
 
           // Warp the lanes so the strands weave and bunch instead of sitting on
           // a regular grid.
-          float warp = fbm3(p * 2.4 + vec3(0.0, uTime * 0.7, uTime * 0.25));
+          float warp = fbm3(p * 2.4 + vec3(0.0, u시간 * 0.7, u시간 * 0.25));
           phase += warp * uTurbulence;
 
           float d = abs(fract(phase) - 0.5) * 2.0;  // 0 on a strand, 1 between
@@ -136,7 +136,7 @@ export class AirScooterMaterial extends ShaderMaterial {
           // Strands dissolve and re-form as the ball turns, and no two carry the
           // same weight — a uniform set of arcs reads as a wireframe globe.
           float id = floor(phase);
-          float life = fbm3(vec3(id * 3.7, lat * 2.2, uTime * 0.5));
+          float life = fbm3(vec3(id * 3.7, lat * 2.2, u시간 * 0.5));
           float alive = smoothstep(-0.35, 0.3, life) * mix(0.45, 1.0, hash11(id * 1.93));
 
           // The lanes converge at the poles, so fade them out there and put a
@@ -146,7 +146,7 @@ export class AirScooterMaterial extends ShaderMaterial {
 
           // Milky vapour filling the gaps, so the ball reads as a body of air
           // rather than a set of lines floating in space.
-          float hz = fbm3(p * 3.1 - vec3(uTime * 0.9, 0.0, 0.0));
+          float hz = fbm3(p * 3.1 - vec3(u시간 * 0.9, 0.0, 0.0));
           float haze = uHaze * (0.42 + 0.58 * smoothstep(-0.4, 0.6, hz));
 
           float strand = (core + halo) * alive * polar;

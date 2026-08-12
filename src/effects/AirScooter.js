@@ -192,7 +192,7 @@ export class AirScooter {
         _emit.lifeVariance = 0.5;
         _emit.spin = 0;
         _emit.tint = null;
-        _emit.time = frame.uTime.value;
+        _emit.time = frame.u시간.value;
         this.dust.emit(count, _emit);
       }
     }
@@ -270,7 +270,7 @@ export class AirScooter {
     _emit.lifeVariance = 0.5;
     _emit.spin = 0;
     _emit.tint = null;
-    _emit.time = frame.uTime.value;
+    _emit.time = frame.u시간.value;
     this._syncDustLook();
     this.dust.emit(Math.round(count * settings.global.particleCount), _emit);
   }

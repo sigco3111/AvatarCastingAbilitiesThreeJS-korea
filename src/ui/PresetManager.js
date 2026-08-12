@@ -105,23 +105,23 @@ export class PresetManager {
   /**
    * Import from a JSON file chosen by the user.
    * Accepts either a single settings snapshot or a map of presets.
-   * @returns {Promise<{ imported: string[], applied: boolean }>}
+   * @returns {Promise<{ 가져오기ed: string[], applied: boolean }>}
    */
-  importFromFile() {
+  가져오기FromFile() {
     return new Promise((resolve) => {
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'application/json,.json';
       input.onchange = async () => {
         const file = input.files?.[0];
-        if (!file) return resolve({ imported: [], applied: false });
+        if (!file) return resolve({ 가져오기ed: [], applied: false });
         try {
           const data = JSON.parse(await file.text());
           // A settings snapshot always has a `global` block; anything else is
           // treated as a preset collection.
           if (data && data.global && data.fire) {
             applySettings(data);
-            resolve({ imported: [], applied: true });
+            resolve({ 가져오기ed: [], applied: true });
           } else {
             const names = [];
             for (const [name, preset] of Object.entries(data)) {
@@ -131,11 +131,11 @@ export class PresetManager {
               }
             }
             this._write();
-            resolve({ imported: names, applied: false });
+            resolve({ 가져오기ed: names, applied: false });
           }
         } catch (error) {
-          console.error('[PresetManager] import failed', error);
-          resolve({ imported: [], applied: false });
+          console.error('[PresetManager] 가져오기 failed', error);
+          resolve({ 가져오기ed: [], applied: false });
         }
       };
       input.click();

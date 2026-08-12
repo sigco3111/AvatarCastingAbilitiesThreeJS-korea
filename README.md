@@ -4,8 +4,8 @@
 > Three.js + Vite + 자체 GLSL로 구현된 실시간 VFX 데모 플랫폼.  
 > 바닥에 마우스로 경로를 그리면 4원소가 그 경로를 따라 쏘아져 끝에서 폭발합니다.
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-casting--abilities.vercel.app-6366f1?style=for-the-badge)](https://casting-abilities.vercel.app/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-22c55e?style=for-the-badge)](LICENSE)
+[![라이브 데모](https://img.shields.io/badge/🌐_Live_Demo-casting--abilities.vercel.app-6366f1?style=for-the-badge)](https://casting-abilities.vercel.app/)
+[![라이선스: MIT](https://img.shields.io/badge/라이선스-MIT-22c55e?style=for-the-badge)](LICENSE)
 [![Three.js](https://img.shields.io/badge/Three.js-r185-000000?style=for-the-badge)](https://threejs.org/)
 [![Vite](https://img.shields.io/badge/Vite-8.x-646cff?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 
@@ -362,7 +362,7 @@ src/
 
 - ✨ **전체 UI 한국어화** — HUD, VFX 에디터 라벨 36건, Loader, 단축키 도움말
 - 🌀 **`.vercel/project.json` link** — 기존 `casting-abilities` Vercel 프로젝트 (이전 한국어화 세션에서 생성)에 신규 GitHub 레포 연결
-- 📦 **GitHub 레포 신설**: [`sigco3111/AvatarCastingAbilitiesThreeJS-korea`](https://github.com/sigco3111/AvatarCastingAbilitiesThreeJS-korea) — sigco3111 표준 fork 패턴
+- 📦 **GitHub 레포 신설**: [`sigco3111/AvatarCastingAbilitiesThreeJS-korea`](https://github.com/sigco3111/AvatarCastingAbilitiesThreeJS-korea) — sigco3111 표준 포크 패턴
 - 🔄 **자동배포 활성화** — `git push origin main` 시 Vercel 자동 빌드 + alias 갱신
 
 ### 원본 업스트림
@@ -371,7 +371,7 @@ src/
 
 ---
 
-## 🤖 생성 정보 (Attribution)
+## 🤖 생성 정보 (어트리뷰션)
 
 | 항목 | 값 |
 |---|---|
@@ -386,7 +386,7 @@ src/
 
 ## 📄 라이선스
 
-이 한국어 빌드는 원본과 동일한 [MIT License](LICENSE)를 따릅니다.  
+이 한국어 빌드는 원본과 동일한 [MIT 라이선스](LICENSE)를 따릅니다.  
 저작권 (c) 2026 sigco3111 + 원본 작성자.
 
 ---

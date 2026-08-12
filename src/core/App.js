@@ -33,8 +33,6 @@ import { t } from '../ui/i18n.js';
 
 import { settings, ELEMENTS, MODES, MODE_META } from '../config/settings.js';
 
-const HDR_URL = './hdri/spruit_sunrise.hdr';
-
 /**
  * Application root: owns every subsystem and the frame loop.
  *
@@ -112,7 +110,7 @@ export class App {
     this.loading = new LoadingScreen();
     this.hud = new HUD(document.getElementById('hud'));
     this.editor = new Editor({
-      onClear: () => this.clearEffects(),
+      onClear: () => this.clear이펙트(),
       onToast: (message) => this.hud.showToast(message)
     });
 
@@ -169,7 +167,7 @@ export class App {
         this.editor.toggle();
         break;
       case 'clear':
-        this.clearEffects();
+        this.clear이펙트();
         this.hud.showToast(t('toast.effectsCleared'));
         break;
       case 'togglePause':
@@ -218,7 +216,7 @@ export class App {
     this.editor.refresh();
   }
 
-  clearEffects() {
+  clear이펙트() {
     this.walk.cancel();
     this.abilities.clear();
     this.particles.reset();
@@ -236,16 +234,16 @@ export class App {
   async load() {
     const assets = new AssetLoader();
 
-    this.loading.setProgress(0.05, t('app.loadingEnvironment'));
+    this.loading.setProgress(0.05, t('app.loading환경'));
     const hdr = await assets.loadHDR(HDR_URL);
-    await this.environment.loadEnvironment(hdr);
+    await this.environment.load환경(hdr);
     frame.uEnvMap.value = this.environment.equirect;
 
     this.loading.setProgress(0.5, t('app.loadingCharacter'));
     await this.character.load(assets);
 
     this.loading.setProgress(0.85, t('app.loadingShaders'));
-    // Compile everything up front so the first cast never stutters.
+    // Compile everything up front so the first cast 처음 캐스팅이 절대 끊기지 않음.
     await this.renderer.gl.compileAsync(this.scene, this.camera);
 
     this.loading.setProgress(1, t('app.loadingReady'));
@@ -278,7 +276,7 @@ export class App {
     this.elapsed += dt;
 
     /* ---- shared uniforms ---- */
-    frame.uTime.value = this.elapsed;
+    frame.u시간.value = this.elapsed;
     frame.uDelta.value = dt;
     frame.uShaderIntensity.value = settings.global.shaderIntensity;
     frame.uGlobalGlow.value = settings.global.glow;
@@ -318,7 +316,7 @@ export class App {
     this.contactShadows.render(this.scene);
 
     /* ---- render ---- */
-    // Exactly one cascade shadow update per frame (see Renderer).
+    // Exactly one cascade shadow update per frame (see 렌더러).
     gl.shadowMap.needsUpdate = true;
     this.post.sync(this.elapsed, this.flash);
     this.post.render();

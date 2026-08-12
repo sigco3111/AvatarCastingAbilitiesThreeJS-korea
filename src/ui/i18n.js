@@ -72,7 +72,7 @@ const translations = {
     'preset.delete': '삭제',
     'preset.exportCurrent': '현재 프리셋 내보내기 (JSON)',
     'preset.exportAll': '모든 프리셋 내보내기',
-    'preset.import': 'JSON 가져오기…',
+    'preset.가져오기': 'JSON 가져오기…',
     'preset.reset': '기본값으로 초기화',
     'preset.defaultName': '내 프리셋',
     'toast.saved': '프리셋 저장됨: "{name}"',
@@ -80,7 +80,7 @@ const translations = {
     'toast.duplicated': '복제됨: "{name}"',
     'toast.deleted': '삭제됨: "{name}"',
     'toast.exported': '프리셋 내보내기 완료',
-    'toast.imported': '프리셋 가져오기 완료',
+    'toast.가져오기ed': '프리셋 가져오기 완료',
     'toast.reset': '기본값으로 초기화됨',
 
     // Editor — global + folders
@@ -117,34 +117,34 @@ const translations = {
     'trail.innerColour': '안쪽 색',
     'trail.outerColour': '바깥 색',
 
-    // Fire — gradient colours
+    // 불 — gradient colours
     'fire.core': '코어',
     'fire.mid': '중간',
     'fire.edge': '가장자리',
     'fire.smoke': '연기',
-    // Fire — flight
+    // 불 — flight
     'fire.updraft': '상승 기류',
     'fire.trailAmp': '트레일 진폭',
     'fire.trailFreq': '트레일 진동수',
     'fire.lateral': '측면 파동',
-    // Fire — flame shape
+    // 불 — flame shape
     'fire.flameLength': '불꽃 길이',
     'fire.flameSpread': '불꽃 확산',
     'fire.flameLean': '불꽃 기울기',
-    // Fire — turbulence
+    // 불 — turbulence
     'fire.swirl': '소용돌이',
     'fire.swirlSpeed': '소용돌이 속도',
     'fire.noiseAmp': '난류 진폭',
     'fire.noiseScale': '난류 스케일',
-    // Fire — temp + radiance
+    // 불 — temp + radiance
     'fire.tempCore': '코어 온도 (K)',
     'fire.tempEdge': '가장자리 온도 (K)',
     'fire.emissiveBoost': '발광 부스트',
-    // Fire — volume
+    // 불 — volume
     'fire.coreClarity': '코어 선명도',
     'fire.densityCurve': '밀도 곡선',
     'fire.shadowSoft': '그림자 부드러움',
-    // Fire — embers + smoke
+    // 불 — embers + smoke
     'fire.embersRate': '불씨 분출 (개/초)',
     'fire.emberSize': '불씨 크기',
     'fire.emberLife': '불씨 수명',
@@ -152,17 +152,17 @@ const translations = {
     'fire.smokeSpeed': '연기 속도',
     'fire.smokeSize': '연기 크기',
     'fire.smokeLife': '연기 수명',
-    // Fire — heat + explosion
+    // 불 — heat + explosion
     'fire.heatIntensity': '열 강도',
     'fire.heatSize': '열 폭',
     'fire.burstPower': '폭발 강도',
     'fire.burstDuration': '폭발 지속',
 
-    // Water — body
+    // 물 — body
     'water.thickness': '물 두께',
     'water.bodyCurve': '본체 곡률',
     'water.flowSpeed': '흐름 속도',
-    // Water — surface
+    // 물 — surface
     'water.deepColour': '깊은 색',
     'water.shallowColour': '얕은 색',
     'water.foamColour': '거품 색',
@@ -170,7 +170,7 @@ const translations = {
     'water.surfaceFoam': '표면 거품',
     'water.foamSharpness': '거품 날카로움',
     'water.edgeBreak': '가장자리 분해',
-    // Water — spray
+    // 물 — spray
     'water.sprayRate': '물보라 분출 (개/초)',
     'water.spraySize': '물보라 크기',
     'water.spraySpeed': '물보라 속도',
@@ -178,14 +178,14 @@ const translations = {
     'water.mistRate': '안개 분출 (개/초)',
     'water.mistSize': '안개 크기',
     'water.mistLife': '안개 수명',
-    // Water — impact
+    // 물 — impact
     'water.splashHeight': '물 튀김 높이',
     'water.splashSpread': '물 튀김 확산',
     'water.splashLife': '물 튀김 수명',
     'water.foamSpread': '거품 확산',
     'water.foamLingering': '거품 잔류',
 
-    // Environment + camera + post + character + walk
+    // 환경 + camera + post + character + walk
     'folder.environment': '환경',
     'folder.post': '포스트 프로세싱',
     'folder.camera': '카메라',
@@ -215,7 +215,7 @@ const translations = {
     'common.cancel': '취소',
     'common.confirm': '확인',
 
-    // Environment
+    // 환경
     'env.sunColour': '키 라이트 색',
     'env.ambientColour': '주변광 색',
     'env.rimColour': '림 라이트 색',
@@ -224,7 +224,7 @@ const translations = {
     'env.fogColour': '안개 색',
     'env.skyTint': '하늘 틴트',
     'env.hemiSky': '하늘 채광',
-    'env.hemiGround': '바닥 반사광',
+    'env.hemi지면': '바닥 반사광',
     'env.background': '배경',
     'env.sunIntensity': '태양 광량',
     'env.ambient': '주변광',
@@ -270,7 +270,7 @@ const translations = {
     'app.loadingReady': '준비 완료',
     'walk.mode': '모드 (M)',
     'toast.paused': '일시정지됨',
-    'app.loadingEnvironment': '환경 로딩 중…'
+    'app.loading환경': '환경 로딩 중…'
   },
 
   en: {
@@ -304,12 +304,12 @@ const translations = {
     'modeKey': 'M',
     'elementsKey': '1 2 3 4',
 
-    'element.fire.label': 'Fire',
-    'element.fire.hint': 'Firebending',
-    'element.water.label': 'Water',
-    'element.water.hint': 'Waterbending',
-    'element.earth.label': 'Earth',
-    'element.earth.hint': 'Earthbending',
+    'element.fire.label': '불',
+    'element.fire.hint': '불bending',
+    'element.water.label': '물',
+    'element.water.hint': '물bending',
+    'element.earth.label': '흙',
+    'element.earth.hint': '흙bending',
     'element.wind.label': 'Air',
     'element.wind.hint': 'Airbending',
 
@@ -323,7 +323,7 @@ const translations = {
     'preset.delete': 'Delete',
     'preset.exportCurrent': 'Export current (JSON)',
     'preset.exportAll': 'Export all presets',
-    'preset.import': 'Import JSON…',
+    'preset.가져오기': 'Import JSON…',
     'preset.reset': 'Reset to defaults',
     'preset.defaultName': 'My preset',
     'toast.saved': 'Saved preset "{name}"',
@@ -331,7 +331,7 @@ const translations = {
     'toast.duplicated': 'Duplicated to "{name}"',
     'toast.deleted': 'Deleted "{name}"',
     'toast.exported': 'Presets exported',
-    'toast.imported': 'Presets imported',
+    'toast.가져오기ed': 'Presets 가져오기ed',
     'toast.reset': 'Reset to defaults',
 
     'folder.global': 'Global',
@@ -344,10 +344,10 @@ const translations = {
     'folder.turbulence': 'Turbulence',
     'folder.temperature': 'Temperature & radiance',
     'folder.volume': 'Volume rendering',
-    'folder.fireGradient': 'Fire gradient',
+    'folder.fireGradient': '불 gradient',
     'folder.embers': 'Embers & smoke',
     'folder.heat': 'Heat & explosion',
-    'folder.waterBody': 'Water body',
+    'folder.waterBody': '물 body',
     'folder.surface': 'Surface',
     'folder.spray': 'Spray, foam & mist',
 
@@ -420,7 +420,7 @@ const translations = {
     'water.foamSpread': 'foam spread',
     'water.foamLingering': 'foam lifetime',
 
-    'folder.environment': 'Environment',
+    'folder.environment': '환경',
     'folder.post': 'Post-processing',
     'folder.camera': 'Camera',
     'folder.character': 'Character',
@@ -456,7 +456,7 @@ const translations = {
     'env.fogColour': 'fog colour',
     'env.skyTint': 'sky tint',
     'env.hemiSky': 'hemi sky',
-    'env.hemiGround': 'hemi bounce',
+    'env.hemi지면': 'hemi bounce',
     'env.background': 'backdrop',
     'env.sunIntensity': 'sun intensity',
     'env.ambient': 'ambient',
@@ -471,7 +471,7 @@ const translations = {
 
     // Walk subsections (English)
     'walk.leap': 'Leap',
-    'earth.ground': 'Ground damage',
+    'earth.ground': '지면 damage',
     'walk.ball': 'Air ball',
 
     'element.commonLight': 'Dynamic light',
@@ -505,13 +505,13 @@ const translations = {
     'walk.mode': 'mode (M)',
     'toast.paused': '일시정지됨',
 
-    'app.loadingEnvironment': '환경 로딩 중…'
+    'app.loading환경': '환경 로딩 중…'
   }
 };
 
 /** 현재 로케일 (반응형). 항상 'ko' 또는 'en'. */
 let currentLocale = readStoredLocale() ?? DEFAULT_LOCALE;
-const subscribers = new Set();
+const 구독rs = new Set();
 
 function readStoredLocale() {
   try {
@@ -547,8 +547,8 @@ export function locale() {
 
 /** 변경 구독. 콜백은 언어 변경 직후 호출됨. */
 export function onChange(cb) {
-  subscribers.add(cb);
-  return () => subscribers.delete(cb);
+  구독rs.add(cb);
+  return () => 구독rs.delete(cb);
 }
 
 /** 로케일 토글 ('ko' ↔ 'en'). UI 라벨은 즉시 다시 그려지고 콜백 모두 호출. */
@@ -560,8 +560,8 @@ export function applyLocale(next) {
   try {
     document.documentElement.lang = next;
   } catch (_) { /* SSR / 비-DOM 환경 */ }
-  for (const cb of subscribers) {
-    try { cb(next); } catch (err) { console.warn('[i18n] subscriber threw', err); }
+  for (const cb of 구독rs) {
+    try { cb(next); } catch (err) { console.warn('[i18n] 구독r threw', err); }
   }
 }
 

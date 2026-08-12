@@ -109,7 +109,7 @@ export class OceanWaterMaterial extends ShaderMaterial {
         varying vec3  vTangent;
         varying float vS;
         varying float vRadius;
-        varying vec3  vWorld;
+        varying vec3  v월드;
         varying float vRandom;
 
         void main() {
@@ -128,12 +128,12 @@ export class OceanWaterMaterial extends ShaderMaterial {
                   * (1.0 + (uHeadSize - 1.0) * smoothstep(0.62, 1.0, u));
 
           vec4 world = modelMatrix * vec4(position, 1.0);
-          vWorld = world.xyz;
+          v월드 = world.xyz;
           gl_Position = projectionMatrix * viewMatrix * world;
         }
       `,
       fragmentShader: /* glsl */ `
-        uniform float uTime;
+        uniform float u시간;
         uniform sampler2D uEnvMap;
         uniform float uRadius;
         uniform float uHeadSize;
@@ -181,7 +181,7 @@ export class OceanWaterMaterial extends ShaderMaterial {
         varying vec3  vTangent;
         varying float vS;
         varying float vRadius;
-        varying vec3  vWorld;
+        varying vec3  v월드;
         varying float vRandom;
 
         ${noiseGLSL}
@@ -351,12 +351,12 @@ export class OceanWaterMaterial extends ShaderMaterial {
           vec3 nAxis = normalize(cross(vTangent, vec3(0.0, 1.0, 0.0)) + vec3(1e-4));
           vec3 bAxis = cross(nAxis, vTangent);
           float ang = atan(dot(perp, bAxis), dot(perp, nAxis))
-                    + s * uSwirl * 0.3 + uTime * uFlow * 0.25 + uSeed;
+                    + s * uSwirl * 0.3 + u시간 * uFlow * 0.25 + uSeed;
           info = vec3(u, ang, s);
 
           // Two swells travelling backwards down the body, wrapped around it by
           // integer harmonics of the angle so they stay continuous at ±pi.
-          float phase = s * uWaveFrequency - uTime * uFlow * 2.0;
+          float phase = s * uWaveFrequency - u시간 * uFlow * 2.0;
           float swell = sin(phase + ang * 2.0) * 0.6 + sin(phase * 1.9 - ang * 3.0 + 1.7) * 0.28;
 
           // Chop, in two bands only.
@@ -372,12 +372,12 @@ export class OceanWaterMaterial extends ShaderMaterial {
           // it happens to straddle, and the body fills with dropped-out speckle.
           // Fine displacement and a robust surface are simply not compatible at
           // 32 steps; fine *shading* is free.
-          float chop = waterFbm(tubeCoord(ang, s - uTime * uFlow * 0.8, uNoiseFrequency)) * 2.0 - 1.0;
-          float ripple = waterFbm(tubeCoord(ang, s - uTime * uFlow * 1.5, uNoiseFrequency * 2.4)) * 2.0 - 1.0;
+          float chop = waterFbm(tubeCoord(ang, s - u시간 * uFlow * 0.8, uNoiseFrequency)) * 2.0 - 1.0;
+          float ripple = waterFbm(tubeCoord(ang, s - u시간 * uFlow * 1.5, uNoiseFrequency * 2.4)) * 2.0 - 1.0;
 
           // Folded crests: the sharp lines where sheets of water meet. Biased to
           // zero mean so it creases the surface rather than inflating it.
-          float ridge = waterRidge(tubeCoord(ang, s - uTime * uFlow * 1.1, uNoiseFrequency * 1.9)) - 0.45;
+          float ridge = waterRidge(tubeCoord(ang, s - u시간 * uFlow * 1.1, uNoiseFrequency * 1.9)) - 0.45;
 
           wave = swell * 0.6
                + (chop * 0.7 + ripple * 0.26) * uChop
@@ -394,7 +394,7 @@ export class OceanWaterMaterial extends ShaderMaterial {
 
         void main() {
           vec3 ro = cameraPosition;
-          vec3 rd = normalize(vWorld - ro);
+          vec3 rd = normalize(v월드 - ro);
 
           // The hull is a camera-facing strip through the axis, so the body sits
           // in a slab around the ray's closest approach to it. Looking down the
@@ -419,7 +419,7 @@ export class OceanWaterMaterial extends ShaderMaterial {
           float stepSize = (t1 - t0) / steps;
           // Dither the entry point: a fixed start turns the crossings into
           // visible contour bands, a per-pixel offset turns them into grain.
-          float t = t0 + stepSize * hash13(vec3(gl_FragCoord.xy, fract(uTime) * 64.0));
+          float t = t0 + stepSize * hash13(vec3(gl_FragCoord.xy, fract(u시간) * 64.0));
 
           vec3 info;
           float wave;
@@ -479,7 +479,7 @@ export class OceanWaterMaterial extends ShaderMaterial {
           // "water" long before it reads the silhouette.
           if (uDetail > 0.001) {
             float df = uNoiseFrequency * 4.5;
-            float dts = uTime * uFlow * 2.2;
+            float dts = u시간 * uFlow * 2.2;
             const float de = 0.05;
             float n0 = waterFbm(tubeCoord(ang, s - dts, df));
             float na = waterFbm(tubeCoord(ang + de, s - dts, df));
@@ -552,8 +552,8 @@ export class OceanWaterMaterial extends ShaderMaterial {
           // field straight onto the surface, and the body comes out looking like
           // a topographic map. Only the *density* of the speckle may vary
           // smoothly; the speckle itself has to be high frequency.
-          float speckle = waterFbm(tubeCoord(ang, s - uTime * uFlow * 1.6, uNoiseFrequency * 4.5)) * 0.72
-                        + waterFbm(tubeCoord(ang, s - uTime * uFlow * 2.4, uNoiseFrequency * 11.0)) * 0.28;
+          float speckle = waterFbm(tubeCoord(ang, s - u시간 * uFlow * 1.6, uNoiseFrequency * 4.5)) * 0.72
+                        + waterFbm(tubeCoord(ang, s - u시간 * uFlow * 2.4, uNoiseFrequency * 11.0)) * 0.28;
 
           float crest = smoothstep(0.1, 0.8, wave) * smoothstep(-0.25, 0.55, N.y);
           float lip = smoothstep(0.55, 1.0, u);              // the leading edge churns
@@ -576,7 +576,7 @@ export class OceanWaterMaterial extends ShaderMaterial {
           // of this shader had. Alpha erosion costs nothing and cannot break the
           // march.
           float thin = 1.0 - smoothstep(0.0, max(uShredDepth, 0.02), chord);
-          float shred = waterFbm(tubeCoord(ang, s - uTime * uFlow * 1.9, uNoiseFrequency * 8.0));
+          float shred = waterFbm(tubeCoord(ang, s - u시간 * uFlow * 1.9, uNoiseFrequency * 8.0));
           float torn = thin * uShred * smoothstep(0.34, 0.62, 1.0 - shred);
 
           /* ---- composite --------------------------------------------------- */

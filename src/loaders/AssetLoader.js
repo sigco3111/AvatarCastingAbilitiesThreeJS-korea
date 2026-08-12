@@ -1,6 +1,6 @@
 import { LoadingManager, TextureLoader } from 'three';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
-import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
 /**
  * A 1×1 opaque white PNG.
@@ -30,7 +30,7 @@ export class AssetLoader {
     );
 
     this.fbx = new FBXLoader(this.manager);
-    this.hdr = new HDRLoader(this.manager);
+    this.hdr = new RGBELoader(this.manager);
     this.texture = new TextureLoader(this.manager);
 
     this._onProgress = null;
@@ -61,7 +61,7 @@ export class AssetLoader {
   /**
    * Resolves once every queued request has settled.
    *
-   * Loaders resolve as soon as the *model* is parsed; its textures are still in
+   * 로더s resolve as soon as the *model* is parsed; its textures are still in
    * flight at that point, so anything that inspects `texture.image` has to wait
    * for this first or it will read a half-initialised texture.
    */
