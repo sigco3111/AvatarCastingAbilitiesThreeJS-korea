@@ -63,7 +63,7 @@ export class Environment {
     );
     this.hemi = new HemisphereLight(
       getColor(settings.environment.hemiSkyColor).clone(),
-      getColor(settings.environment.hemi지면Color).clone(),
+      getColor(settings.environment.hemiGroundColor).clone(),
       settings.environment.hemiIntensity
     );
 
@@ -187,7 +187,7 @@ export class Environment {
     this.ambient.color.copy(getColor(env.ambientColor));
     this.hemi.intensity = env.hemiIntensity;
     this.hemi.color.copy(getColor(env.hemiSkyColor));
-    this.hemi.groundColor.copy(getColor(env.hemi지면Color));
+    this.hemi.groundColor.copy(getColor(env.hemiGroundColor));
 
     this.scene.environmentIntensity = env.envIntensity;
 
