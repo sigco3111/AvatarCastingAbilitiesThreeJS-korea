@@ -314,7 +314,7 @@ export class EarthAbility extends Ability {
   }
 
   /** Absolute age at which this plate lets go. */
-  _plateCracktime(record, c) {
+  _plateCrackTime(record, c) {
     let delay;
     if (record.apron) {
       // The apron breaks outward from the tower, not on the crust's schedule.
