@@ -4,7 +4,7 @@
 > Three.js + Vite + 자체 GLSL로 구현된 실시간 VFX 데모 플랫폼.  
 > 바닥에 마우스로 경로를 그리면 4원소가 그 경로를 따라 쏘아져 끝에서 폭발합니다.
 
-[![라이브 데모](https://img.shields.io/badge/🌐_Live_Demo-casting--abilities.vercel.app-6366f1?style=for-the-badge)](https://sigco3111.github.io/AvatarCastingAbilitiesThreeJS-korea/)
+[![라이브 데모](https://img.shields.io/badge/🌐_Live_Demo-GitHub_Pages-222222?style=for-the-badge&logo=github&logoColor=white)](https://sigco3111.github.io/AvatarCastingAbilitiesThreeJS-korea/)
 [![라이선스: MIT](https://img.shields.io/badge/라이선스-MIT-22c55e?style=for-the-badge)](LICENSE)
 [![Three.js](https://img.shields.io/badge/Three.js-r185-000000?style=for-the-badge)](https://threejs.org/)
 [![Vite](https://img.shields.io/badge/Vite-8.x-646cff?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
@@ -81,15 +81,25 @@ pnpm preview     # 빌드 결과 로컬에서 미리보기
 
 번들 크기: **JS 978 KB (gzip 266 KB)** + **CSS 6 KB** + **FBX 2.3 MB + HDR 5.7 MB** (public/ 자산).
 
-### 4️⃣ Vercel 배포 (선택)
+### 4️⃣ Pages 배포 (현재 호스팅)
 
 ```bash
-# 1회만: Vercel에 새 프로젝트 import + production alias 할당
-vercel --yes --prod --non-interactive --scope sigco3111s-projects --token "$VERCEL_TOKEN"
+# vite build → dist/ 생성
+npm install
+node ./node_modules/vite/bin/vite.js build
 
-# 이후: git push origin main 만으로 자동 재배포
-git push origin main
+# gh-pages 브랜치에 빌드 산출물 갈아끼우기
+git checkout gh-pages
+echo -e "dist\nnode_modules" > .gitignore
+rm -rf assets index.html angtexture.png hdri models dist node_modules
+cp -r dist/. .
+git add -A && git commit -m "deploy: vite build to gh-pages (base: /AvatarCastingAbilitiesThreeJS-korea/)"
+git push origin gh-pages
+
+# 이후: git push origin gh-pages 만으로 재배포 (Pages 빌드 + CDN 전파 60초 대기)
 ```
+
+> ℹ️ **이관 단서 (2026-08-17)**: 이 저장소는 `casting-abilities.vercel.app` 에서 운영되던 시기를 거쳐, **2026-08-13 사고 친 에이전트가 Vercel 프로젝트를 정리하면서 GitHub Pages 로 정적 이관**되었습니다. 현재 라이브는 `https://sigco3111.github.io/AvatarCastingAbilitiesThreeJS-korea/` 단일 호스팅 (정직함 6번째 위치: repo Website 도 동일 URL). `vite.config.js` 의 `base: './'` 가 gh-pages 빌드 시 상대 basePath 로 자동 적용됩니다.
 
 ---
 
@@ -373,7 +383,7 @@ src/
 | FBX 자산 | `/models/Standing%20Idle.fbx` |
 | HDR 자산 | `/hdri/spruit_sunrise.hdr` |
 
-모두 200이어야 정상. 404면 `public/` 자산이 Vercel에 업로드되지 않은 것 → `.vercelignore`가 `public/` 차단하지 않았는지 확인.
+모두 200이어야 정상. 404면 `public/` 자산이 Pages 빌드에 포함되지 않은 것 → `dist/` 직접 확인.
 
 ---
 
@@ -421,12 +431,14 @@ src/
 - 🔄 **이전 영문 라벨 SSoT 보존** — 영문은 그대로 유지하고 한국어 사전 추가 점진. `t(key)` 가 ko → en → key 순서로 폴백.
 - 🎛️ **VFX 에디터 새 컨트롤** — `walk.mode` (탑승/시전 모드 토글), `element.{fire,water,earth,wind}.folder` (원소 컨테이너) 등 약 40개 키 추가
 
-### v1.0.0-korea (2026-08-12) — 최초 한국어 빌드
+### v1.0.0-korea (2026-08-12) — 최초 한국어 빌드 (Vercel 운영 시기)
+
+> ℹ️ **이력 단서**: 이 저장소는 2026-08-12 에 Vercel (`casting-abilities.vercel.app`) 로 운영되던 시기에 만들어졌으며, 2026-08-13 사고 친 에이전트가 Vercel 프로젝트를 정리하면서 GitHub Pages 로 정적 이관되었습니다. 아래 항목들은 그 시점의 사실 + 이관 후 현재 상태가 섞여 있습니다.
 
 - ✨ **전체 UI 한국어화** — HUD, VFX 에디터 라벨 36건, Loader, 단축키 도움말
-- 🌀 **`.vercel/project.json` link** — 기존 `casting-abilities` Vercel 프로젝트 (이전 한국어화 세션에서 생성)에 신규 GitHub 레포 연결
+- 🌀 **`casting-abilities` Vercel 프로젝트 link** *(2026-08-12, 이력)* — 이전 한국어화 세션에서 생성, **2026-08-13 Vercel 정리 시 함께 삭제됨**
 - 📦 **GitHub 레포 신설**: [`sigco3111/AvatarCastingAbilitiesThreeJS-korea`](https://github.com/sigco3111/AvatarCastingAbilitiesThreeJS-korea) — sigco3111 표준 포크 패턴
-- 🔄 **자동배포 활성화** — `git push origin main` 시 Vercel 자동 빌드 + alias 갱신
+- 🔄 **현재 자동배포** *(2026-08-17 갱신)* — `git push origin gh-pages` 시 GitHub Actions 대신 로컬에서 빌드한 `dist/` 를 직접 push → Pages 자동 CDN 갱신
 
 ### 원본 업스트림
 
