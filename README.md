@@ -17,7 +17,7 @@
 
 ---
 
-## 🎬 TL;DR — 무엇을 할 수 있나
+## 🎬 무엇을 할 수 있나
 
 1. **🖱️ 경로를 그립니다** — 바닥에 마우스 왼쪽 드래그 (베지에 스플라인 자동 보간).
 2. **✨ 마우스를 떼면 시전** — 불·물·흙·공기 중 선택한 원소가 그 경로를 따라 날아가 끝에서 폭발.
@@ -32,7 +32,6 @@
 | URL | 용도 |
 |---|---|
 | **[sigco3111.github.io/AvatarCastingAbilitiesThreeJS-korea](https://sigco3111.github.io/AvatarCastingAbilitiesThreeJS-korea/)** | 🎯 사용자용 — anon 200, SSO 없이 바로 접근 |
-| `casting-abilities-gx32gkvax-sigco3111s-projects.vercel.app` | ⚙️ team-scope production URL — 내부 디버깅용 |
 
 > ⚠️ **macOS Safari 권장**: WebGL2 + 이미지 기반 조명 + FBX 캐릭터 + HDR 환경 조명을 모두 사용하므로, GPU 가속이 활성화된 데스크탑 브라우저에서 가장 잘 작동합니다.
 
